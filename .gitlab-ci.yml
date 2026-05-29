@@ -1,0 +1,20 @@
+# CI for CTXone-docs (Astro docs site in website/)
+stages:
+  - build
+
+build-docs:
+  image: node:22-bookworm
+  cache:
+    key:
+      files:
+        - website/package-lock.json
+    paths:
+      - website/node_modules/
+  script:
+    - cd website
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - website/dist/
+    expire_in: 1 week
