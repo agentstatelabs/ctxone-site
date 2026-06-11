@@ -51,6 +51,10 @@ export default defineConfig({
 							label: 'Memory MCP design',
 							slug: 'how-it-works/memory-mcp-design',
 						},
+						{
+							label: 'Memory branch scoping',
+							slug: 'how-it-works/memory-branch-scoping',
+						},
 					],
 				},
 				{
@@ -59,6 +63,7 @@ export default defineConfig({
 						{ label: 'CLI', slug: 'reference/cli' },
 						{ label: 'MCP tools', slug: 'reference/mcp-tools' },
 						{ label: 'HTTP API', slug: 'reference/http-api' },
+						{ label: 'Agent guidance', slug: 'reference/agent-guidance' },
 					],
 				},
 				{
@@ -69,6 +74,10 @@ export default defineConfig({
 							slug: 'integrations/ai-coding-tools',
 						},
 						{ label: 'Open WebUI', slug: 'integrations/open-webui' },
+						{
+							label: 'ASD code intelligence',
+							slug: 'integrations/asd-integration',
+						},
 					],
 				},
 				{
@@ -76,6 +85,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Cookbook', slug: 'operating/cookbook' },
 						{ label: 'Troubleshooting', slug: 'operating/troubleshooting' },
+						{ label: 'Data safety', slug: 'operating/data-safety' },
 					],
 				},
 				{

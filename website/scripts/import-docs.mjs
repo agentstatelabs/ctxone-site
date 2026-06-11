@@ -75,6 +75,13 @@ const MAPPING = [
 		order: 3,
 		title: 'Memory MCP design',
 	},
+	{
+		src: 'MEMORY_BRANCH_SCOPING.md',
+		section: 'how-it-works',
+		slug: 'memory-branch-scoping',
+		order: 4,
+		title: 'Memory branch scoping',
+	},
 
 	// Reference
 	{
@@ -98,6 +105,13 @@ const MAPPING = [
 		order: 3,
 		title: 'HTTP API',
 	},
+	{
+		src: 'AGENTS_GUIDANCE.md',
+		section: 'reference',
+		slug: 'agent-guidance',
+		order: 4,
+		title: 'Agent guidance',
+	},
 
 	// Integrations
 	{
@@ -114,6 +128,13 @@ const MAPPING = [
 		order: 2,
 		title: 'Open WebUI',
 	},
+	{
+		src: 'ASD_INTEGRATION.md',
+		section: 'integrations',
+		slug: 'asd-integration',
+		order: 3,
+		title: 'ASD code intelligence',
+	},
 
 	// Operating
 	{
@@ -129,6 +150,13 @@ const MAPPING = [
 		slug: 'troubleshooting',
 		order: 2,
 		title: 'Troubleshooting',
+	},
+	{
+		src: 'DATA_SAFETY.md',
+		section: 'operating',
+		slug: 'data-safety',
+		order: 3,
+		title: 'Data safety',
 	},
 
 	// Why CtxOne (strategy)
