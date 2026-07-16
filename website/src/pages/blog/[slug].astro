@@ -1,0 +1,177 @@
+---
+/**
+ * Dynamic route for a single blog post at /blog/:slug.
+ *
+ * Only generates paths for non-draft posts, so draft posts neither
+ * appear in the index nor render at a predictable URL. When the
+ * founder is ready to publish, flip `draft: false` in the
+ * frontmatter.
+ */
+import { getCollection, render } from 'astro:content';
+import LandingLayout from '../../layouts/LandingLayout.astro';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('blog', ({ data }) => !data.draft);
+	return posts.map((post) => ({
+		params: { slug: post.id },
+		props: { post },
+	}));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+	year: 'numeric',
+	month: 'long',
+	day: 'numeric',
+});
+---
+
+<LandingLayout
+	title={`${post.data.title} — CTXone Blog`}
+	description={post.data.description}
+>
+	<article class="section">
+		<div class="container narrow">
+			<div class="eyebrow">
+				<a href="/blog/">← Blog</a>
+			</div>
+			<h1>{post.data.title}</h1>
+			<div class="post-meta">
+				<time datetime={post.data.pubDate.toISOString()}>
+					{dateFormatter.format(post.data.pubDate)}
+				</time>
+				<span class="dot-sep">·</span>
+				<span class="author">{post.data.author}</span>
+				{
+					post.data.updatedDate && (
+						<>
+							<span class="dot-sep">·</span>
+							<span class="updated">
+								Updated{' '}
+								{dateFormatter.format(post.data.updatedDate)}
+							</span>
+						</>
+					)
+				}
+			</div>
+
+			<div class="post-body">
+				<Content />
+			</div>
+		</div>
+	</article>
+</LandingLayout>
+
+<style>
+	.narrow {
+		max-width: 44rem;
+	}
+
+	.eyebrow {
+		font-family: var(--ctx-font-mono);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		margin-bottom: 1rem;
+	}
+
+	.eyebrow a {
+		color: var(--ctx-accent);
+	}
+
+	h1 {
+		font-size: clamp(1.8rem, 4vw, 2.75rem);
+		font-weight: 800;
+		color: #ffffff;
+		margin: 0 0 1rem 0;
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+	}
+
+	.post-meta {
+		color: var(--ctx-text-faint);
+		font-family: var(--ctx-font-mono);
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		margin-bottom: 2.5rem;
+	}
+
+	.dot-sep {
+		margin: 0 0.5rem;
+	}
+
+	.post-body {
+		color: var(--ctx-text);
+		font-size: 1rem;
+		line-height: 1.75;
+	}
+
+	.post-body :global(h2) {
+		color: #ffffff;
+		font-size: 1.5rem;
+		margin: 2.5rem 0 1rem 0;
+		letter-spacing: -0.01em;
+	}
+
+	.post-body :global(h3) {
+		color: #ffffff;
+		font-size: 1.15rem;
+		margin: 2rem 0 0.75rem 0;
+	}
+
+	.post-body :global(p) {
+		margin: 0 0 1.1rem 0;
+	}
+
+	.post-body :global(ul),
+	.post-body :global(ol) {
+		margin: 0 0 1.1rem 0;
+		padding-left: 1.5rem;
+	}
+
+	.post-body :global(li) {
+		margin-bottom: 0.4rem;
+	}
+
+	.post-body :global(a) {
+		color: var(--ctx-accent);
+	}
+
+	.post-body :global(code) {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		padding: 0.1rem 0.4rem;
+		border-radius: var(--ctx-radius-sm);
+		font-size: 0.9em;
+		color: var(--ctx-accent-text);
+		font-family: var(--ctx-font-mono);
+	}
+
+	.post-body :global(pre) {
+		background: #0a0a0a;
+		border: 1px solid var(--ctx-border);
+		border-radius: var(--ctx-radius-md);
+		padding: 1rem 1.25rem;
+		overflow-x: auto;
+		font-size: 0.85rem;
+		margin: 1.5rem 0;
+	}
+
+	.post-body :global(pre code) {
+		background: transparent;
+		border: none;
+		padding: 0;
+		color: var(--ctx-text-code);
+	}
+
+	.post-body :global(blockquote) {
+		border-left: 3px solid var(--ctx-accent);
+		padding-left: 1rem;
+		color: var(--ctx-text-dim);
+		margin: 1.5rem 0;
+		font-style: italic;
+	}
+</style>

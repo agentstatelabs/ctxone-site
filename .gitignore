@@ -1,0 +1,12 @@
+.DS_Store
+*.swp
+*.swo
+
+# Astro / Node
+website/node_modules/
+website/dist/
+website/.astro/
+website/src/content/docs/
+
+# org leak patterns (CI var, never public)
+.leakscan.local

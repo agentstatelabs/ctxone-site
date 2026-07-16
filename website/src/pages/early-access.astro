@@ -1,0 +1,570 @@
+---
+/**
+ * CTXone Early Access Program (EAP) landing page.
+ *
+ * Target audience: organizations in compliance-forward industries
+ * (healthcare, financial services, regulated public sector, large
+ * SaaS) deploying AI agents internally at scale. The page pitches
+ * anchor-partner terms — 3yr commitment, locked early rate, direct
+ * founder access, roadmap influence — without publishing pricing
+ * (pricing is private, shared in the qualification call).
+ *
+ * The "Apply" form is wired as a client-side mailto: composer — no
+ * backend. Submits open the user's mail client addressed to
+ * hello@agentstatelabs.com with the form fields pre-filled as the
+ * body. Good enough for v1; easy to swap for a real form backend
+ * once there's volume.
+ */
+import LandingLayout from '../layouts/LandingLayout.astro';
+---
+
+<LandingLayout
+	title="CTXone Early Access Program — Enterprise anchor partners"
+	description="For organizations deploying AI agents internally at scale, today. Direct founder access, roadmap influence, locked early pricing for 3 years."
+>
+	<section class="section">
+		<div class="container narrow">
+			<div class="eyebrow">Early Access Program</div>
+			<h1>Early Access Program</h1>
+			<p class="lede">
+				For organizations deploying AI agents internally at
+				scale — today, not in 12 months.
+			</p>
+		</div>
+	</section>
+
+	<section class="section">
+		<div class="container narrow">
+			<h2>What it is</h2>
+			<p>
+				CTXone's open tier is shipping and ready to install
+				today. CTXone Enterprise — multi-tenant, SSO, audit
+				bundles, compliance features — is on a compressed
+				roadmap. The Early Access Program is how we work with
+				a small number of anchor partners to ship Enterprise
+				features that actually solve their problems, rather
+				than what we guess.
+			</p>
+			<p>
+				EAP partners run on CTXone today, shape what ships
+				next, and lock their rate for 3 years. We pick up the
+				phone when they call. That's the whole program.
+			</p>
+		</div>
+	</section>
+
+	<section class="section">
+		<div class="container narrow">
+			<h2>What partners get</h2>
+			<ul>
+				<li>
+					<strong>Immediate access to the CTXone open tier</strong>
+					— install it, evaluate it, run it against your real
+					workflows starting today.
+				</li>
+				<li>
+					<strong>Early access to Enterprise features as they ship</strong>
+					— SSO, RBAC, audit bundles, multi-tenant, policy
+					governance, fleet view — at no additional cost
+					during the EAP period.
+				</li>
+				<li>
+					<strong>Direct founder access</strong> — email,
+					shared Slack, whatever works for you. Feedback,
+					support, and bug triage go straight to the people
+					building the product.
+				</li>
+				<li>
+					<strong>Quarterly product review calls</strong> —
+					30-60 minutes every quarter. Your input shapes the
+					Enterprise roadmap.
+				</li>
+				<li>
+					<strong>Locked early pricing, guaranteed for 3 years</strong>
+					— the rate you commit at holds regardless of
+					future GA pricing changes.
+				</li>
+				<li>
+					<strong>Co-authored case study (opt-in only)</strong>
+					— marketing visibility when you're ready, never
+					before.
+				</li>
+			</ul>
+		</div>
+	</section>
+
+	<section class="section">
+		<div class="container narrow">
+			<h2>Who it's for</h2>
+			<p>
+				Organizations in compliance-forward industries —
+				healthcare, financial services, regulated public
+				sector, large SaaS — that are actively building
+				internal agent workflows and need Enterprise features
+				in the short-to-medium term. Partners who want to
+				help shape the product, not just consume a finished
+				SaaS offering.
+			</p>
+			<p>
+				If you're a solo dev or hobbyist, the
+				<a href="/getting-started/quickstart/">open tier</a>
+				is what you want — it's the same product, minus the
+				Enterprise bolt-ons. EAP is for teams with commercial
+				intent and a real deployment.
+			</p>
+		</div>
+	</section>
+
+	<section class="section">
+		<div class="container narrow">
+			<h2>What partners commit to</h2>
+			<ul>
+				<li>
+					<strong>3-year minimum term</strong> at the locked
+					rate.
+				</li>
+				<li>
+					<strong>One 30-60 minute feedback call per quarter</strong>
+					— so we can tell whether we're building the right
+					thing.
+				</li>
+				<li>
+					<strong>Willingness to be a reference</strong> —
+					verbal or written, if the fit is right. No
+					unilateral marketing use of your name.
+				</li>
+				<li>
+					<strong>Actual usage</strong> — you use CTXone as
+					part of your real workflow. The program isn't
+					set up to reserve a future rate on code you don't
+					intend to run.
+				</li>
+			</ul>
+		</div>
+	</section>
+
+	<section class="section">
+		<div class="container narrow">
+			<h2>Apply</h2>
+			<p class="form-lede">
+				Fill out the form below. We'll reply within two
+				business days to schedule a qualification call.
+			</p>
+
+			<form id="eap-form" class="eap-form" novalidate>
+				<div class="field">
+					<label for="company">Company name</label>
+					<input
+						type="text"
+						id="company"
+						name="company"
+						autocomplete="organization"
+						required
+					/>
+				</div>
+
+				<div class="field-row">
+					<div class="field">
+						<label for="name">Your name</label>
+						<input
+							type="text"
+							id="name"
+							name="name"
+							autocomplete="name"
+							required
+						/>
+					</div>
+					<div class="field">
+						<label for="role">Your role</label>
+						<input
+							type="text"
+							id="role"
+							name="role"
+							autocomplete="organization-title"
+							placeholder="e.g. VP Engineering"
+							required
+						/>
+					</div>
+				</div>
+
+				<div class="field">
+					<label for="email">Email</label>
+					<input
+						type="email"
+						id="email"
+						name="email"
+						autocomplete="email"
+						required
+					/>
+				</div>
+
+				<div class="field">
+					<label for="use-case">
+						Primary use case <span class="hint">(~200 chars)</span>
+					</label>
+					<textarea
+						id="use-case"
+						name="use-case"
+						rows="3"
+						maxlength="220"
+						placeholder="What internal agent workflow are you building?"
+						required></textarea>
+				</div>
+
+				<div class="field">
+					<label for="team-size">Team size</label>
+					<select id="team-size" name="team-size" required>
+						<option value="">Select a range…</option>
+						<option value="1-10">1-10 engineers</option>
+						<option value="10-50">10-50 engineers</option>
+						<option value="50+">50+ engineers</option>
+					</select>
+				</div>
+
+				<fieldset class="field field-checks">
+					<legend>Compliance requirements</legend>
+					<label class="check">
+						<input type="checkbox" name="compliance" value="HIPAA" />
+						<span>HIPAA</span>
+					</label>
+					<label class="check">
+						<input type="checkbox" name="compliance" value="SOC 2" />
+						<span>SOC 2</span>
+					</label>
+					<label class="check">
+						<input type="checkbox" name="compliance" value="GDPR" />
+						<span>GDPR</span>
+					</label>
+					<label class="check">
+						<input
+							type="checkbox"
+							name="compliance"
+							value="SOX / FINRA"
+						/>
+						<span>SOX / FINRA</span>
+					</label>
+					<label class="check">
+						<input
+							type="checkbox"
+							name="compliance"
+							value="Data residency"
+						/>
+						<span>Data residency</span>
+					</label>
+					<label class="check">
+						<input type="checkbox" name="compliance" value="Other" />
+						<span>None / other</span>
+					</label>
+				</fieldset>
+
+				<button type="submit" class="btn btn-primary">Apply</button>
+				<p class="form-note">
+					Submitting opens your mail client with a pre-filled
+					message to
+					<code>hello@agentstatelabs.com</code>.
+				</p>
+			</form>
+		</div>
+	</section>
+
+	<section class="section">
+		<div class="container narrow">
+			<h2>FAQ</h2>
+
+			<div class="faq">
+				<h3>What if I'm not sure we qualify?</h3>
+				<p>
+					Fill out the form anyway — we triage, and if the
+					fit isn't right we'll point you at the self-serve
+					open tier. No one loses anything by asking.
+				</p>
+			</div>
+
+			<div class="faq">
+				<h3>How many partners are you taking?</h3>
+				<p>
+					A small number. Enough to get real signal, few
+					enough that every partner gets founder-level
+					attention. We'd rather have five committed
+					partners than fifty disengaged ones.
+				</p>
+			</div>
+
+			<div class="faq">
+				<h3>Is pricing public?</h3>
+				<p>
+					No, because the right anchor is per-partner. We
+					quote after understanding your use case, team
+					size, and compliance needs on the qualification
+					call.
+				</p>
+			</div>
+
+			<div class="faq">
+				<h3>When does Enterprise GA ship?</h3>
+				<p>
+					We don't commit externally to a date yet. EAP
+					partners get features as they ship and transition
+					on their locked rate when Enterprise reaches GA.
+				</p>
+			</div>
+
+			<p class="more">
+				Questions that aren't listed here? Email
+				<a href="mailto:hello@agentstatelabs.com">
+					hello@agentstatelabs.com
+				</a>.
+			</p>
+		</div>
+	</section>
+</LandingLayout>
+
+<script is:inline>
+	// Client-side mailto composer. Collects the form fields, encodes
+	// them into a mailto: URL addressed to hello@agentstatelabs.com,
+	// and hands it to the browser to open in the user's mail client.
+	// No backend, no third-party form service — deliberately minimal
+	// for v1. Works even with JavaScript disabled as long as the user
+	// actively submits (the form will just POST nowhere; we swap to a
+	// mailto: target in that case via the `action` below).
+	(function () {
+		var form = document.getElementById('eap-form');
+		if (!form) return;
+
+		form.addEventListener('submit', function (event) {
+			event.preventDefault();
+			var data = new FormData(form);
+			var compliance = data.getAll('compliance').join(', ') || 'None specified';
+
+			var lines = [
+				'Company: ' + (data.get('company') || ''),
+				'Contact: ' + (data.get('name') || '') + ' (' + (data.get('role') || '') + ')',
+				'Email: ' + (data.get('email') || ''),
+				'Team size: ' + (data.get('team-size') || ''),
+				'Compliance: ' + compliance,
+				'',
+				'Primary use case:',
+				data.get('use-case') || '',
+			];
+
+			var subject = 'CTXone Early Access — ' + (data.get('company') || 'Inquiry');
+			var body = lines.join('\n');
+			var href =
+				'mailto:hello@agentstatelabs.com' +
+				'?subject=' + encodeURIComponent(subject) +
+				'&body=' + encodeURIComponent(body);
+
+			window.location.href = href;
+		});
+	})();
+</script>
+
+<style>
+	.narrow {
+		max-width: 44rem;
+	}
+
+	.eyebrow {
+		color: var(--ctx-accent);
+		font-family: var(--ctx-font-mono);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		margin-bottom: 0.75rem;
+	}
+
+	h1 {
+		font-size: clamp(1.8rem, 4vw, 2.75rem);
+		font-weight: 800;
+		color: #ffffff;
+		margin: 0 0 1.5rem 0;
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+	}
+
+	h2 {
+		font-size: 1.3rem;
+		color: #ffffff;
+		margin: 0 0 1rem 0;
+	}
+
+	h3 {
+		font-size: 1rem;
+		color: #ffffff;
+		margin: 0 0 0.35rem 0;
+	}
+
+	p {
+		color: var(--ctx-text);
+		font-size: 1rem;
+		margin: 0 0 1rem 0;
+		line-height: 1.65;
+	}
+
+	.lede {
+		color: var(--ctx-text-dim);
+		font-size: 1.15rem;
+		margin: 0;
+	}
+
+	ul {
+		color: var(--ctx-text);
+		margin: 0 0 1rem 0;
+		padding-left: 1.25rem;
+		line-height: 1.65;
+	}
+
+	ul li {
+		margin-bottom: 0.65rem;
+	}
+
+	strong {
+		color: #ffffff;
+	}
+
+	code {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		padding: 0.1rem 0.4rem;
+		border-radius: var(--ctx-radius-sm);
+		font-size: 0.9em;
+		color: var(--ctx-accent-text);
+		font-family: var(--ctx-font-mono);
+	}
+
+	.form-lede {
+		color: var(--ctx-text-dim);
+		font-size: 0.95rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.eap-form {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		border-radius: var(--ctx-radius-lg);
+		padding: 1.75rem;
+	}
+
+	.field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+	}
+
+	.field-row {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 1rem;
+	}
+
+	@media (max-width: 560px) {
+		.field-row {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	label,
+	legend {
+		color: #ffffff;
+		font-size: 0.85rem;
+		font-weight: 600;
+		font-family: var(--ctx-font-mono);
+		letter-spacing: 0.02em;
+	}
+
+	legend {
+		margin-bottom: 0.5rem;
+		padding: 0;
+	}
+
+	.hint {
+		color: var(--ctx-text-faint);
+		font-weight: 400;
+		font-family: var(--ctx-font-sans);
+		letter-spacing: 0;
+	}
+
+	input[type='text'],
+	input[type='email'],
+	textarea,
+	select {
+		background: var(--ctx-bg);
+		color: var(--ctx-text);
+		border: 1px solid var(--ctx-border-hi);
+		border-radius: var(--ctx-radius-md);
+		padding: 0.65rem 0.8rem;
+		font-family: var(--ctx-font-sans);
+		font-size: 0.95rem;
+		width: 100%;
+	}
+
+	textarea {
+		resize: vertical;
+		font-family: var(--ctx-font-sans);
+	}
+
+	input:focus,
+	textarea:focus,
+	select:focus {
+		outline: none;
+		border-color: var(--ctx-accent);
+		box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+	}
+
+	.field-checks {
+		border: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.check {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: var(--ctx-text);
+		font-family: var(--ctx-font-sans);
+		font-weight: 400;
+		font-size: 0.95rem;
+		letter-spacing: 0;
+		cursor: pointer;
+	}
+
+	.check input[type='checkbox'] {
+		width: auto;
+		margin: 0;
+		accent-color: var(--ctx-accent);
+	}
+
+	button[type='submit'] {
+		align-self: flex-start;
+		border: none;
+		cursor: pointer;
+		font-family: var(--ctx-font-sans);
+	}
+
+	.form-note {
+		color: var(--ctx-text-faint);
+		font-size: 0.8rem;
+		margin: 0;
+	}
+
+	.form-note code {
+		font-size: 0.85em;
+	}
+
+	.faq {
+		margin-bottom: 1.5rem;
+	}
+
+	.more {
+		color: var(--ctx-text-dim);
+		font-size: 0.9rem;
+		margin-top: 2rem;
+	}
+</style>

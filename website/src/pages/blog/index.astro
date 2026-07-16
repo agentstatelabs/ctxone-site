@@ -1,0 +1,175 @@
+---
+/**
+ * Blog index — lists non-draft posts from the `blog` content
+ * collection, newest first. Empty state is rendered when no
+ * published posts exist yet (which will be true at launch since
+ * the first post ships as draft).
+ */
+import { getCollection } from 'astro:content';
+import LandingLayout from '../../layouts/LandingLayout.astro';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+	year: 'numeric',
+	month: 'long',
+	day: 'numeric',
+});
+---
+
+<LandingLayout
+	title="CTXone Blog"
+	description="Writing on agent state, memory for AI tools, and the infrastructure behind CTXone."
+>
+	<section class="section">
+		<div class="container narrow">
+			<div class="eyebrow">Blog</div>
+			<h1>Notes from the team</h1>
+			<p class="lede">
+				Writing on agent state, memory for AI tools, and what
+				we're learning while building CTXone.
+			</p>
+
+			{
+				posts.length === 0 ? (
+					<div class="empty">
+						<p>
+							No posts yet. Subscribe to know when the
+							first one lands.
+						</p>
+						<a
+							class="btn btn-secondary"
+							href="https://github.com/ctxone/ctxone"
+							rel="noopener"
+						>
+							Watch on GitHub
+						</a>
+					</div>
+				) : (
+					<ul class="post-list">
+						{posts.map((post) => (
+							<li class="post-item">
+								<a href={`/blog/${post.id}/`} class="post-link">
+									<div class="post-meta">
+										<time datetime={post.data.pubDate.toISOString()}>
+											{dateFormatter.format(post.data.pubDate)}
+										</time>
+										<span class="dot-sep">·</span>
+										<span class="author">{post.data.author}</span>
+									</div>
+									<h2 class="post-title">{post.data.title}</h2>
+									<p class="post-desc">{post.data.description}</p>
+								</a>
+							</li>
+						))}
+					</ul>
+				)
+			}
+		</div>
+	</section>
+</LandingLayout>
+
+<style>
+	.narrow {
+		max-width: 44rem;
+	}
+
+	.eyebrow {
+		color: var(--ctx-accent);
+		font-family: var(--ctx-font-mono);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		margin-bottom: 0.75rem;
+	}
+
+	h1 {
+		font-size: clamp(1.8rem, 4vw, 2.75rem);
+		font-weight: 800;
+		color: #ffffff;
+		margin: 0 0 1rem 0;
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+	}
+
+	.lede {
+		color: var(--ctx-text-dim);
+		font-size: 1.1rem;
+		margin: 0 0 2.5rem 0;
+	}
+
+	.empty {
+		border: 1px dashed var(--ctx-border-hi);
+		border-radius: var(--ctx-radius-lg);
+		padding: 2.5rem 1.5rem;
+		text-align: center;
+		background: var(--ctx-panel);
+	}
+
+	.empty p {
+		color: var(--ctx-text-dim);
+		font-size: 1rem;
+		margin: 0 0 1.25rem 0;
+	}
+
+	.post-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.post-item {
+		border: 1px solid var(--ctx-border);
+		border-radius: var(--ctx-radius-lg);
+		background: var(--ctx-panel);
+		transition: border-color 0.12s, transform 0.12s;
+	}
+
+	.post-item:hover {
+		border-color: var(--ctx-border-hi);
+	}
+
+	.post-link {
+		display: block;
+		padding: 1.25rem 1.5rem;
+		text-decoration: none !important;
+		color: inherit;
+	}
+
+	.post-link:hover {
+		text-decoration: none !important;
+	}
+
+	.post-meta {
+		color: var(--ctx-text-faint);
+		font-family: var(--ctx-font-mono);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		margin-bottom: 0.5rem;
+	}
+
+	.dot-sep {
+		margin: 0 0.5rem;
+	}
+
+	.post-title {
+		color: #ffffff;
+		font-size: 1.3rem;
+		font-weight: 700;
+		margin: 0 0 0.4rem 0;
+		letter-spacing: -0.01em;
+	}
+
+	.post-desc {
+		color: var(--ctx-text-dim);
+		font-size: 0.95rem;
+		margin: 0;
+		line-height: 1.55;
+	}
+</style>

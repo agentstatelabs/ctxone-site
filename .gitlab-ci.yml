@@ -1,0 +1,54 @@
+# CI for CTXone-docs (Astro docs site in website/)
+stages:
+  - build
+
+build-docs:
+  stage: build
+  image: node:22-bookworm
+  cache:
+    key:
+      files:
+        - website/package-lock.json
+    paths:
+      - website/node_modules/
+  script:
+    - cd website
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - website/dist/
+    expire_in: 1 week
+
+# Triggers GitHub Actions workflow_dispatch on agentstatelabs/ctxone-site after every push.
+# GitHub native push triggers do not fire reliably for mirror pushes on this repo,
+# so we explicitly invoke workflow_dispatch via the GitHub API. Requires GH_PAT CI var.
+trigger-github-pages:
+  stage: build
+  image: curlimages/curl:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  script:
+    - |
+      curl -fsS -X POST \
+        -H "Authorization: Bearer $GH_PAT" \
+        -H "Accept: application/vnd.github+json" \
+        https://api.github.com/repos/agentstatelabs/ctxone-site/actions/workflows/website.yml/dispatches \
+        -d '{"ref":"main"}'
+    - echo "Dispatched website.yml on agentstatelabs/ctxone-site"
+# --- added by batch-publish-sites: leak-scan-gated publish to GitHub ---
+# Uses reserved stage .post (no need to touch the existing stages list).
+# Requires CI vars GITHUB_REPO, GITHUB_TOKEN, and file-var LEAKSCAN_LOCAL.
+publish-github:
+  stage: .post
+  image: alpine:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" && $GITHUB_REPO'
+  variables:
+    GIT_DEPTH: 0
+  before_script:
+    - apk add --no-cache git bash grep curl
+  script:
+    - printf '%s' "$LEAKSCAN_LOCAL" > .leakscan.local
+    - chmod +x scripts/leak-scan.sh scripts/publish-to-github.sh
+    - ./scripts/publish-to-github.sh
