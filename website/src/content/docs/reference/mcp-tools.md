@@ -1,31 +1,38 @@
 ---
 title: "MCP tools"
-description: "The CTXone Hub exposes **65 MCP tools** over the stdio transport, in seven groups:"
+description: "The CTXone Hub exposes **65 MCP tools** over the stdio transport, organized into ten groups."
 sidebar:
   order: 2
 ---
-The CTXone Hub exposes **65 MCP tools** over the stdio transport. The core groups are listed below; newer tools (`help`, `docs_find`, the `draft_*` family, `session_*`, and `worktree`) are also available — run `ctx help` for the always-current catalog. Core groups:
+The CTXone Hub exposes **65 MCP tools** over the stdio transport, in ten
+groups. The full list is below; it always matches the running binary — call
+the `help` tool (or `ctx help`) for per-tool syntax, examples, and gotchas on
+demand.
 
-- **Memory** (8): `remember`, `recall`, `prime`, `context`,
-  `summarize_session`, `what_changed_since`, `why_did_we`,
-  `project_status`
-- **Plans** (12): `plan_new`, `plan_add`, `plan_start`,
-  `plan_done`, `plan_abandon`, `plan_next`, `plan_list`,
-  `plan_show`, `plan_tasks`, `plan_move`, `plan_complete`, `plan_archive`
+- **Memory & recall** (8): `remember`, `recall`, `prime`, `context`,
+  `forget`, `get`, `ls`, `search`
+- **Provenance & history** (5): `why_did_we`, `blame`, `log`, `diff`,
+  `what_changed_since`
+- **Sessions & accounting** (6): `project_status`, `summarize_session`,
+  `session_segments`, `session_info`, `session_link_plan`, `record_llm_usage`
+- **Help & docs** (2): `help`, `docs_find`
+- **Plans** (15): `plan_new`, `plan_add`, `plan_start`, `plan_done`,
+  `plan_abandon`, `plan_next`, `plan_list`, `plan_show`, `plan_link`,
+  `plan_stale`, `plan_archive`, `plan_move`, `plan_complete`, `plan_close`,
+  `plan_tasks`
+- **Branches & merge** (3): `branches`, `branch`, `merge`
+- **Drafts** (4): `draft_stage`, `drafts_list`, `draft_promote`,
+  `draft_discard`
+- **Taint** (4): `taint_list`, `taint_check`, `taint_apply`, `taint_remove`
 - **Reminders** (9): `reminder_create`, `remind_me`, `reminder_list`,
   `reminder_get`, `reminder_snooze`, `reminder_approve`, `reminder_cancel`,
   `reminder_start`, `reminder_record`
-- **Governance** (8): `forget`, `branches`, `branch`, `merge`,
-  `taint_list`, `taint_check`, `taint_apply`, `taint_remove`
-- **Read primitives** (6): `get`, `ls`,
-  `search`, `log`, `blame`, `diff`
 - **Code intelligence** (9): `code_repos`, `code_search`, `code_read`,
   `callers_of`, `callees_of`, `get_active_repo`, `set_active_repo`,
   `code_cross_repo_edges`, `code_impact`
   _(requires `--asd-repo` or `--asd-url` at hub startup; the federated
   `code_cross_repo_edges` / `code_impact` shell out to the `asd` CLI over the
   shared repo registry)_
-- **Accounting** (1): `record_llm_usage`
 
 Any MCP-compatible agent (Claude Code, Cursor, VS Code Copilot with
 MCP, Codex, etc.) can call these directly.
@@ -1014,6 +1021,41 @@ repo. Errors if the repo isn't registered; pass an empty string to clear.
 **Parameters:** `repo` (registered repo name; empty string clears).
 
 ---
+
+## Additional tools
+
+These tools round out the 65-tool surface. They follow the same
+request/response conventions as the tools above; call the `help` tool
+(`ctx help <name>`) for exact parameters and examples on demand.
+
+**Help & docs**
+
+- `help` — on-demand instruction disclosure: returns per-feature syntax,
+  examples, and gotchas for a `ctx` (or `asd`) tool, or the full catalog.
+  Backed by a shared cross-tool registry so `ctx` and `asd` resolve each
+  other's topics.
+- `docs_find` — search docs that were imported into memory (via `prime` /
+  `ctx prime`) and return the best-matching sections.
+
+**Plans (extended)**
+
+- `plan_link` — link a plan to a related plan, session, or task.
+- `plan_stale` — surface plans that have gone stale (untouched / drifted).
+- `plan_close` — close a plan out (distinct from `plan_complete` / `plan_archive`).
+
+**Drafts** — stage proposed memory writes for review before they land:
+
+- `draft_stage` — stage a proposed memory write without committing it.
+- `drafts_list` — list currently staged drafts.
+- `draft_promote` — promote a staged draft into committed memory.
+- `draft_discard` — discard a staged draft.
+
+**Sessions**
+
+- `session_segments` — list the segments (topic arcs) of a session.
+- `session_info` — describe a session: its namespace, the branches it
+  touched, and the plans/tasks it advanced.
+- `session_link_plan` — associate a session with a plan.
 
 ## See also
 
