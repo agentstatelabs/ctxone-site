@@ -1,5 +1,9 @@
-# HTTP API Reference
-
+---
+title: "HTTP API"
+description: "The CTXone Hub exposes a REST API over HTTP when run with `--http`. This doc lists every endpoint, its request format, response format, and any query paramet…"
+sidebar:
+  order: 3
+---
 The CTXone Hub exposes a REST API over HTTP when run with `--http`. This
 doc lists every endpoint, its request format, response format, and any
 query parameters.
@@ -288,7 +292,7 @@ Recent commit history.
 - `limit` — max commits (default: 20)
 
 **Response (200):** array of commits. See the `log` response schema in
-[CLI_REFERENCE.md](CLI_REFERENCE.md#log-response).
+[CLI_REFERENCE.md](/reference/cli/#log-response).
 
 ### `GET /api/blame/{ref_name}?path=<path>`
 
@@ -551,7 +555,7 @@ Retrieve memories for a topic. Pinned-first, token-scored, budget-capped.
 - `ref` — branch (default `main`)
 
 **Response (200):** see the `recall` response schema in
-[CLI_REFERENCE.md](CLI_REFERENCE.md#recall-response).
+[CLI_REFERENCE.md](/reference/cli/#recall-response).
 
 Every recall updates the session token counters — each call's `sent`
 contributes to `session_tokens_used` on `GET /api/stats/tokens`.
@@ -714,7 +718,7 @@ X-RateLimit-Remaining: 0
 
 Configure via `--rate-limit-rpm <N>` or the `CTXONE_RATE_LIMIT_RPM` env
 var. `0` disables rate limiting entirely. See
-[docs/TROUBLESHOOTING.md#rate-limiting](TROUBLESHOOTING.md#rate-limiting)
+[docs/TROUBLESHOOTING.md#rate-limiting](/operating/troubleshooting/#rate-limiting)
 for details.
 
 ## Per-session token tracking
@@ -744,7 +748,7 @@ from the environment; the Hub binary accepts `--agent-id <name>`
 for MCP stdio mode (which is what `ctx init` wires into the
 generated `.mcp.json` / `.cursor/mcp.json` etc).
 
-See [docs/TROUBLESHOOTING.md#per-tool-agent-ids](TROUBLESHOOTING.md#per-tool-agent-ids)
+See [docs/TROUBLESHOOTING.md#per-tool-agent-ids](/operating/troubleshooting/#per-tool-agent-ids)
 for the full resolution order and examples.
 
 ## Plan endpoints
@@ -924,6 +928,6 @@ for tenant isolation. CTXone Hub doesn't currently expose these.
 
 ## See also
 
-- [CLI_REFERENCE.md](CLI_REFERENCE.md) — the `ctx` CLI, which wraps this API
-- [MCP_TOOLS.md](MCP_TOOLS.md) — the MCP tools, which wrap the same underlying logic
-- [ARCHITECTURE.md](ARCHITECTURE.md) — how recall ranks, how the graph is structured
+- [CLI_REFERENCE.md](/reference/cli/) — the `ctx` CLI, which wraps this API
+- [MCP_TOOLS.md](/reference/mcp-tools/) — the MCP tools, which wrap the same underlying logic
+- [ARCHITECTURE.md](/how-it-works/architecture/) — how recall ranks, how the graph is structured

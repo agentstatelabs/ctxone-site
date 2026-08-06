@@ -1,10 +1,14 @@
-# CTXone Walkthrough — from install to daily use
-
+---
+title: "Walkthrough"
+description: "The \"sit down and actually use it\" guide: the startup sequence, the daily loop, what happens under the covers, how CTXone plugs into your LLM, and how it wor…"
+sidebar:
+  order: 3
+---
 The "sit down and actually use it" guide: the startup sequence, the daily
 loop, what happens under the covers, how CTXone plugs into your LLM, and how
 it works alongside AgentStateDeveloper. For the 5-minute version see
-[QUICKSTART.md](QUICKSTART.md); for a flat command reference see
-[FEATURES.md](FEATURES.md).
+[QUICKSTART.md](/getting-started/quickstart/); for a flat command reference see
+[FEATURES.md](/reference/features/).
 
 The one-sentence mental model: **CTXone is persistent, searchable,
 accountable memory for AI agents — recall ranks the *relevant* context into
@@ -45,10 +49,10 @@ Code / Cursor / Codex. It installs, primes CTXone, and offers ASD too.
 - **Recall is ranked, not flat.** Instead of pasting your whole memory into
   every prompt, `recall` scores candidates against the topic and fills a
   token budget with the most relevant — pinned memories always included.
-  See [ARCHITECTURE.md](ARCHITECTURE.md) for why this is O(log n).
+  See [ARCHITECTURE.md](/how-it-works/architecture/) for why this is O(log n).
 - **Durability is on by default** — startup + periodic snapshots, a PID
   lockfile so a second hub can't corrupt the db, and an inode-drift
-  watchdog. See [DATA_SAFETY.md](DATA_SAFETY.md).
+  watchdog. See [DATA_SAFETY.md](/operating/data-safety/).
 
 ---
 
@@ -118,7 +122,7 @@ existing transcripts.
 
 - **Token savings grow with your memory.** The bigger and flatter your
   "just paste everything" baseline would have been, the more ranked recall
-  saves. `ctx stats` makes it provable. See [TOKEN_SAVINGS.md](TOKEN_SAVINGS.md).
+  saves. `ctx stats` makes it provable. See [TOKEN_SAVINGS.md](/how-it-works/token-savings/).
 - **Memory stays accountable.** Every fact has a blame chain; nothing is an
   anonymous blob. Reversing a decision is a deliberate act, not an accident.
 - **Plans don't rot.** Because a plan is a live object the agent updates with
@@ -130,7 +134,7 @@ existing transcripts.
 
 CTXone is the **shared team memory** half. **[AgentStateDeveloper](https://github.com/agentstatelabs/AgentStateDeveloper)**
 is the **per-developer code-context** half. They're built to pair — see
-[ASD_INTEGRATION.md](ASD_INTEGRATION.md) for the deep version:
+[ASD_INTEGRATION.md](/integrations/asd-integration/) for the deep version:
 
 - **ASD** answers "what does *this code* do, and what will *this change*
   break?" — impact, invariants, effects, call graph, checked into each repo.
@@ -154,8 +158,8 @@ When both are installed:
 
 ## Next steps
 
-- [QUICKSTART.md](QUICKSTART.md) — nothing to live savings in 5 minutes.
-- [FEATURES.md](FEATURES.md) — every `ctx` command.
-- [ARCHITECTURE.md](ARCHITECTURE.md) — pinned vs primed, how recall ranks.
-- [ASD_INTEGRATION.md](ASD_INTEGRATION.md) — the suite, in depth.
+- [QUICKSTART.md](/getting-started/quickstart/) — nothing to live savings in 5 minutes.
+- [FEATURES.md](/reference/features/) — every `ctx` command.
+- [ARCHITECTURE.md](/how-it-works/architecture/) — pinned vs primed, how recall ranks.
+- [ASD_INTEGRATION.md](/integrations/asd-integration/) — the suite, in depth.
 - [license terms](/license/) — OSS / Team / Enterprise editions.

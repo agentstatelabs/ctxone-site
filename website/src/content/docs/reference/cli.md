@@ -1,8 +1,12 @@
-# CLI Reference
-
+---
+title: "CLI reference"
+description: "Complete reference for the `ctx` command-line tool. For task-oriented recipes, see [COOKBOOK.md](COOKBOOK.md). For the mental model, see [ARCHITECTURE.md](AR…"
+sidebar:
+  order: 1
+---
 Complete reference for the `ctx` command-line tool. For task-oriented
-recipes, see [COOKBOOK.md](COOKBOOK.md). For the mental model, see
-[ARCHITECTURE.md](ARCHITECTURE.md).
+recipes, see [COOKBOOK.md](/operating/cookbook/). For the mental model, see
+[ARCHITECTURE.md](/how-it-works/architecture/).
 
 ## Synopsis
 
@@ -474,7 +478,7 @@ ctxone-hub --http --asd-url myproject=http://127.0.0.1:4120
 - `--asd-url <NAME=URL>` — register a pre-running `asd-serve` endpoint
   (repeatable). Proxies `/api/code/<name>/*` to `<URL>/api/v1/*`.
 
-See [ASD_INTEGRATION.md](ASD_INTEGRATION.md) for the full setup guide.
+See [ASD_INTEGRATION.md](/integrations/asd-integration/) for the full setup guide.
 
 ### `ctx init [options]`
 
@@ -805,9 +809,9 @@ Soft-archive. Task data preserved.
 
 ## See also
 
-- [QUICKSTART.md](QUICKSTART.md) — 5-minute get-running guide
-- [COOKBOOK.md](COOKBOOK.md) — practical recipes
-- [ARCHITECTURE.md](ARCHITECTURE.md) — how recall ranks, how branches work
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — common errors and fixes
-- [HTTP_API.md](HTTP_API.md) — REST endpoints for non-CLI integrations
-- [MCP_TOOLS.md](MCP_TOOLS.md) — MCP tools exposed to agents
+- [QUICKSTART.md](/getting-started/quickstart/) — 5-minute get-running guide
+- [COOKBOOK.md](/operating/cookbook/) — practical recipes
+- [ARCHITECTURE.md](/how-it-works/architecture/) — how recall ranks, how branches work
+- [TROUBLESHOOTING.md](/operating/troubleshooting/) — common errors and fixes
+- [HTTP_API.md](/reference/http-api/) — REST endpoints for non-CLI integrations
+- [MCP_TOOLS.md](/reference/mcp-tools/) — MCP tools exposed to agents

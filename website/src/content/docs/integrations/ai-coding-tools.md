@@ -1,11 +1,15 @@
-# Integrating CTXone with AI Tools
-
+---
+title: "AI coding tools"
+description: "How to wire CTXone into the common AI coding tools so every session starts with project context loaded. For details on what each MCP tool does, see [MCP_TOOL…"
+sidebar:
+  order: 1
+---
 How to wire CTXone into the common AI coding tools so every session starts
 with project context loaded. For details on what each MCP tool does, see
-[MCP_TOOLS.md](MCP_TOOLS.md).
+[MCP_TOOLS.md](/reference/mcp-tools/).
 
 **Chat hosts (not coding tools):** for Open WebUI specifically, CTXone
-ships native Tool and Filter plugins — see [OPENWEBUI.md](OPENWEBUI.md).
+ships native Tool and Filter plugins — see [OPENWEBUI.md](/integrations/open-webui/).
 The Filter auto-injects relevant memory into every turn, which works
 even with models that don't support tool-calling.
 
@@ -54,7 +58,7 @@ REST + Lens for every tool. It picks the correct shape per tool:
 
 The project namespace (detected from the cwd) is baked into the URL so the daemon
 scopes writes per project. Override the endpoint with `--mcp-url`. If the hub
-isn't running, `ctx init` warns you. See [DEPLOYMENT.md](DEPLOYMENT.md) for the
+isn't running, `ctx init` warns you. See [DEPLOYMENT.md](/operating/deployment/) for the
 daemon setup, `ctx service install`, and `--auth-token` (with `--auth-token` /
 `--auth-token-env` on `ctx init` to embed it) when exposing the hub beyond
 localhost.
@@ -397,7 +401,7 @@ shared host:
 }
 ```
 
-See [COOKBOOK.md — Team-shared memory](COOKBOOK.md#team-shared-memory) for a
+See [COOKBOOK.md — Team-shared memory](/operating/cookbook/#team-shared-memory) for a
 full docker-compose setup.
 
 ---
@@ -419,4 +423,4 @@ MCP diagnostic view.
 **Codex isn't auto-configured.**
 Known limitation; write the TOML manually (see above).
 
-For more, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
+For more, see [TROUBLESHOOTING.md](/operating/troubleshooting/).

@@ -1,7 +1,11 @@
-# Architecture — The Mental Model
-
+---
+title: "Architecture"
+description: "This is the conceptual walkthrough. For API details, see the command reference. For strategy, see [VISION.md](VISION.md)."
+sidebar:
+  order: 1
+---
 This is the conceptual walkthrough. For API details, see the command reference.
-For strategy, see [VISION.md](VISION.md).
+For strategy, see [VISION.md](/why-ctxone/vision/).
 
 ## The one-sentence pitch
 
@@ -119,7 +123,7 @@ The baseline is computed by serializing the entire graph to JSON and dividing
 the character count by 4 (a rough tokens-per-char estimate). It's cached
 between writes and only recomputed when the graph changes.
 
-See [TOKEN_SAVINGS.md](TOKEN_SAVINGS.md) for the full derivation and how to
+See [TOKEN_SAVINGS.md](/how-it-works/token-savings/) for the full derivation and how to
 read the numbers.
 
 ## Branches (multi-context memory)
@@ -209,20 +213,20 @@ The diagram shows a single Hub, but today **MCP is served only over stdio**, so
 each agent (Claude Desktop, Cursor, …) *spawns its own* `ctxone-hub` child that
 opens the db directly. The HTTP surfaces (`ctx` CLI, Lens) are a *separate*
 process. Because a hub takes an exclusive lock on its db file (see
-[DATA_SAFETY.md](DATA_SAFETY.md)), an agent's stdio hub and a `--http --lens` hub
+[DATA_SAFETY.md](/operating/data-safety/)), an agent's stdio hub and a `--http --lens` hub
 **cannot both own the same db at once** — whoever starts first wins the lock.
 
 So "one Hub, three surfaces" is the intent, but in practice you pick a topology:
 let an agent own the db (no web UI), run a shared HTTP hub (no stdio agent on that
 db yet), or give each agent its own db. See
-**[DEPLOYMENT.md](DEPLOYMENT.md)** for the full matrix and config examples.
+**[DEPLOYMENT.md](/operating/deployment/)** for the full matrix and config examples.
 
 The unified daemon — **the unified-hub design** — makes
 the diagram literally true and is now the **standard** setup: `ctxone-hub --http`
 serves MCP at `/mcp` alongside REST + Lens, so one process covers all three and
 tools connect by URL. `ctx init` defaults to this (`--transport http`), removing
 the startup-order race. The per-client stdio path remains a supported fallback
-(`ctx init --transport stdio`); see [DEPLOYMENT.md](DEPLOYMENT.md) to choose.
+(`ctx init --transport stdio`); see [DEPLOYMENT.md](/operating/deployment/) to choose.
 
 ## What the Hub is not
 

@@ -1,5 +1,9 @@
-# Token Economics — The Math Behind AgentStateGraph Memory
-
+---
+title: "Token economics"
+description: "> **Calibration note.** The ratios on this page (60× per session, etc.) are > a theoretical ceiling derived from a specific model of \"flat memory > dumped in…"
+sidebar:
+  order: 3
+---
 > **Calibration note.** The ratios on this page (60× per session, etc.) are
 > a theoretical ceiling derived from a specific model of "flat memory
 > dumped into context every turn." They are not the number we promise on
@@ -9,7 +13,7 @@
 > what the math allows under optimistic conditions; real users sit
 > somewhere between 5× and that ceiling depending on graph size and how
 > scoped their recalls are. For the measurement details see
-> [TOKEN_SAVINGS.md](TOKEN_SAVINGS.md).
+> [TOKEN_SAVINGS.md](/how-it-works/token-savings/).
 
 ## The Current Model (Flat Memory)
 

@@ -1,5 +1,9 @@
-# 5-Minute Quickstart
-
+---
+title: "5-Minute Quickstart"
+description: "From nothing to seeing live token savings in about five minutes."
+sidebar:
+  order: 1
+---
 From nothing to seeing live token savings in about five minutes.
 
 ## 1. Install
@@ -37,7 +41,7 @@ install for the PATH change to take effect.
 
 ```bash
 ctx --version
-# ctx 0.75.1
+# ctx 0.9.27
 ```
 
 ## 2. Start the Hub
@@ -51,13 +55,13 @@ ctx serve --http --lens    # …plus the Lens web UI at http://localhost:3001
 
 A single `--http` hub serves the REST API, the MCP tool surface (`/mcp`), and —
 with `--lens` — the web UI, all from one process. To run it at boot so it owns
-the db before any agent, see [`ctx service install`](DEPLOYMENT.md#running-as-a-service).
+the db before any agent, see [`ctx service install`](/operating/deployment/#running-as-a-service).
 
 You'll see:
 
 ```
 Starting CtxOne Hub on port 3001 (db: /Users/you/.ctxone/memory.db)
-INFO CtxOne Hub starting version="0.75.1"
+INFO CtxOne Hub starting version="0.9.27"
 INFO Storage: sqlite path=/Users/you/.ctxone/memory.db
 INFO HTTP API listening port=3001
 INFO Try: curl http://localhost:3001/api/health
@@ -158,12 +162,12 @@ with pinned context loaded and topic-relevant memories at hand — no more
 re-explaining your project.
 
 To keep the hub running across reboots (so it's up before any tool), install it
-as a service — see [`ctx service install`](DEPLOYMENT.md#running-as-a-service).
+as a service — see [`ctx service install`](/operating/deployment/#running-as-a-service).
 
 > **Alternative: stdio, no daemon.** `ctx init --transport stdio` instead makes
 > each tool spawn its own `ctxone-hub` child — zero-setup (no hub to run), but
 > only one process can own the db at a time, so there's no shared web UI. Use it
-> for a quick single-tool setup; see [DEPLOYMENT.md](DEPLOYMENT.md) for the
+> for a quick single-tool setup; see [DEPLOYMENT.md](/operating/deployment/) for the
 > trade-offs and for `--auth-token` when exposing the hub beyond localhost.
 
 ## 7. Prime your project's critical context
@@ -202,9 +206,9 @@ Anything you stored before adopting projects stays in the reserved
 
 ## Next steps
 
-- [Architecture](ARCHITECTURE.md) — the mental model for how recall and priming work
-- [Token Savings](TOKEN_SAVINGS.md) — how the ratio is computed and how to maximize it
-- [Cookbook](COOKBOOK.md) — real-world recipes (git hooks, cron jobs, shell prompts)
+- [Architecture](/how-it-works/architecture/) — the mental model for how recall and priming work
+- [Token Savings](/how-it-works/token-savings/) — how the ratio is computed and how to maximize it
+- [Cookbook](/operating/cookbook/) — real-world recipes (git hooks, cron jobs, shell prompts)
 
 ## Troubleshooting
 
@@ -219,4 +223,4 @@ Stop the hub, delete `~/.ctxone/memory.db`, start the hub again.
 
 **I want to share memory across a team.**
 Use the Postgres backend: `export DATABASE_URL=postgres://... && ctx serve --http --storage postgres` (the connection string is read from the `DATABASE_URL` env var, not a flag).
-See the [Cookbook](COOKBOOK.md#team-shared-memory) for the full recipe.
+See the [Cookbook](/operating/cookbook/#team-shared-memory) for the full recipe.

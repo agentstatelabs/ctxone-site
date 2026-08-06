@@ -1,7 +1,10 @@
-# MCP Tools Reference
-
-The CTXone Hub exposes **53 MCP tools** over the stdio transport, in
-seven groups:
+---
+title: "MCP tools"
+description: "The CTXone Hub exposes **65 MCP tools** over the stdio transport, in seven groups:"
+sidebar:
+  order: 2
+---
+The CTXone Hub exposes **65 MCP tools** over the stdio transport. The core groups are listed below; newer tools (`help`, `docs_find`, the `draft_*` family, `session_*`, and `worktree`) are also available — run `ctx help` for the always-current catalog. Core groups:
 
 - **Memory** (8): `remember`, `recall`, `prime`, `context`,
   `summarize_session`, `what_changed_since`, `why_did_we`,
@@ -27,8 +30,8 @@ seven groups:
 Any MCP-compatible agent (Claude Code, Cursor, VS Code Copilot with
 MCP, Codex, etc.) can call these directly.
 
-For setup instructions, see [INTEGRATIONS.md](INTEGRATIONS.md).
-For the underlying concepts, see [ARCHITECTURE.md](ARCHITECTURE.md).
+For setup instructions, see [INTEGRATIONS.md](/integrations/ai-coding-tools/).
+For the underlying concepts, see [ARCHITECTURE.md](/how-it-works/architecture/).
 
 ## Connecting
 
@@ -55,7 +58,7 @@ for the duration of the agent session and handles one client at a time.
 
 Every stdio session is scoped to a **namespace** — the per-repo
 isolation unit for branches, plans, memory, taints, reminders, and
-history (see [MEMORY_BRANCH_SCOPING.md](MEMORY_BRANCH_SCOPING.md)).
+history (see [MEMORY_BRANCH_SCOPING.md](/how-it-works/memory-branch-scoping/)).
 The namespace is resolved once, at server startup:
 
 1. An explicit `--namespace <ns>` flag or `CTX_NAMESPACE` env var wins.
@@ -582,7 +585,7 @@ Create a new branch starting from `from` (default `"main"`).
 **When to call:** before doing speculative or breaking work. Branches
 sandbox both code and memory — `remember` calls on a feature branch
 stay there until the branch merges. See
-[MEMORY_BRANCH_SCOPING.md](MEMORY_BRANCH_SCOPING.md) for the full
+[MEMORY_BRANCH_SCOPING.md](/how-it-works/memory-branch-scoping/) for the full
 model.
 
 ---
@@ -1014,8 +1017,8 @@ repo. Errors if the repo isn't registered; pass an empty string to clear.
 
 ## See also
 
-- [HTTP_API.md](HTTP_API.md) — same logic exposed over REST
-- [INTEGRATIONS.md](INTEGRATIONS.md) — how to wire these tools into specific AI clients
-- [ASD_INTEGRATION.md](ASD_INTEGRATION.md) — full guide to the ASD code intelligence integration
-- [ARCHITECTURE.md](ARCHITECTURE.md) — the underlying graph model
+- [HTTP_API.md](/reference/http-api/) — same logic exposed over REST
+- [INTEGRATIONS.md](/integrations/ai-coding-tools/) — how to wire these tools into specific AI clients
+- [ASD_INTEGRATION.md](/integrations/asd-integration/) — full guide to the ASD code intelligence integration
+- [ARCHITECTURE.md](/how-it-works/architecture/) — the underlying graph model
 - [AGENTS.md](AGENTS.md) — guidance on when to reach for plans vs. inline work

@@ -1,5 +1,9 @@
-# agentstategraph-memory — MCP Server Design
-
+---
+title: "Memory MCP design"
+description: ""
+sidebar:
+  order: 3
+---
 ## Overview
 
 A thin MCP server layer over the existing AgentStateGraph 26 tools that provides
@@ -150,14 +154,14 @@ Internally:
   
   projects/
     agentstategraph/
-      status            → "0.3.5-beta.2, pre-launch"
+      status            → "0.9.27, pre-launch"
       recent_work       → ["Postgres backend", "auth middleware", "explorer"]
       decisions/        # Key decisions with blame trails
         license         → "BSL 1.1"
         saas_model      → "try-before-you-buy on-ramp"
         no_clustering   → "not needed for launch"
     threadweaver/
-      status            → "0.3.5-beta.2, tools toggle shipped"
+      status            → "0.9.27, tools toggle shipped"
       recent_work       → ["markdown rendering", "tool detection"]
   
   contacts/

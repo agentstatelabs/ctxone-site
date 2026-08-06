@@ -1,5 +1,9 @@
-# Context Anxiety — Product Vision
-
+---
+title: "Vision"
+description: ""
+sidebar:
+  order: 1
+---
 ## The Insight
 
 A long-running AI session is both the best and worst experience in AI tooling.

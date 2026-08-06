@@ -1,14 +1,18 @@
-# CTXone Features & Command Reference
-
+---
+title: "Features & commands"
+description: "A complete tour of what CTXone does and every `ctx` command it exposes. For a narrative \"how do I actually use this\" guide, read [WALKTHROUGH.md](WALKTHROUGH…"
+sidebar:
+  order: 0
+---
 A complete tour of what CTXone does and every `ctx` command it exposes. For
 a narrative "how do I actually use this" guide, read
-[WALKTHROUGH.md](WALKTHROUGH.md). For exhaustive per-flag detail see
-[CLI_REFERENCE.md](CLI_REFERENCE.md); for the agent-facing tools see
-[MCP_TOOLS.md](MCP_TOOLS.md) and [HTTP_API.md](HTTP_API.md).
+[WALKTHROUGH.md](/getting-started/walkthrough/). For exhaustive per-flag detail see
+[CLI_REFERENCE.md](/reference/cli/); for the agent-facing tools see
+[MCP_TOOLS.md](/reference/mcp-tools/) and [HTTP_API.md](/reference/http-api/).
 
 CTXone has four surfaces:
 
-- **CTXone Hub** (`server/`) — MCP server (52 tools) + HTTP API; the memory
+- **CTXone Hub** (`server/`) — MCP server (65 tools) + HTTP API; the memory
   interface for AI tools.
 - **CTXone Engine** (`engine/`) — the core memory + graph layer
   (AgentStateGraph).
@@ -106,18 +110,18 @@ CTXone has four surfaces:
 
 ## MCP tools & HTTP API
 
-The Hub exposes **52 MCP tools** to agents — memory (`remember`, `recall`,
+The Hub exposes **65 MCP tools** to agents — memory (`remember`, `recall`,
 `context`), plans, branches, taint (`taint_*`), provenance (`why_did_we`,
 `summarize_session`), and token accounting (`record_llm_usage`). Full list:
-[MCP_TOOLS.md](MCP_TOOLS.md). The REST surface is in
-[HTTP_API.md](HTTP_API.md).
+[MCP_TOOLS.md](/reference/mcp-tools/). The REST surface is in
+[HTTP_API.md](/reference/http-api/).
 
 Those MCP tools are served two ways: over **stdio** (a per-tool child), and —
 this is the standard setup — over **HTTP at `/mcp`** (Streamable HTTP) by an
 `--http` daemon, so one process serves MCP + REST + Lens and every tool connects
 by URL. Guard a network-exposed hub with a bearer token (`--auth-token`;
 loopback is exempt) and, if needed, browser origins (`--allowed-origin`). See
-[DEPLOYMENT.md](DEPLOYMENT.md).
+[DEPLOYMENT.md](/operating/deployment/).
 
 ---
 
