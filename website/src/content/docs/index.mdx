@@ -1,0 +1,43 @@
+---
+title: CtxOne docs
+description: Persistent, searchable, accountable memory for AI agents.
+template: splash
+hero:
+  tagline: Memory that survives the session.
+  actions:
+    - text: Quickstart
+      link: /getting-started/quickstart/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/ctxone/ctxone
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <Card title="New here?" icon="rocket">
+    Start with the [Quickstart](/getting-started/quickstart/) — it gets you
+    from zero to a running Hub and an AI tool that remembers things in
+    under five minutes.
+  </Card>
+
+  <Card title="How it works" icon="puzzle">
+    Read [Architecture](/how-it-works/architecture/) for the mental model
+    and [Token savings](/how-it-works/token-savings/) for the math behind
+    the live savings ratio.
+  </Card>
+
+  <Card title="Integrate" icon="setting">
+    Wire CTXone into [AI coding tools](/integrations/ai-coding-tools/) with
+    `ctx init`, or drop the [Open WebUI plugin](/integrations/open-webui/)
+    into a self-hosted chat install.
+  </Card>
+
+  <Card title="Reference" icon="open-book">
+    Full [CLI](/reference/cli/), [MCP tool](/reference/mcp-tools/), and
+    [HTTP API](/reference/http-api/) references — every command, flag,
+    endpoint, and response shape.
+  </Card>
+</CardGrid>

@@ -1,5 +1,9 @@
-# AgentStateGraph — Use Cases Beyond Infrastructure Ops
-
+---
+title: "Use cases"
+description: ""
+sidebar:
+  order: 4
+---
 ## 1. Agent Memory (Highest Leverage)
 
 The blank session problem. Every AI session starts from zero. Users keep multiple

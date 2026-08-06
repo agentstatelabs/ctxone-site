@@ -1,11 +1,19 @@
-# Token Savings — How the Ratio Is Computed
-
+---
+title: "Token savings"
+description: "CTXone's core pitch is **fewer tokens per turn, more useful context**. This doc explains how the savings are measured, how to interpret the ratio, and how to…"
+sidebar:
+  order: 2
+---
 CTXone's core pitch is **fewer tokens per turn, more useful context**. This
 doc explains how the savings are measured, how to interpret the ratio, and
 how to maximize it.
 
-For the business case and enterprise math, see [TOKEN_ECONOMICS.md](TOKEN_ECONOMICS.md).
-For the architecture, see [ARCHITECTURE.md](ARCHITECTURE.md).
+For the business case and enterprise math, see [TOKEN_ECONOMICS.md](/why-ctxone/token-economics/).
+For the architecture, see [ARCHITECTURE.md](/how-it-works/architecture/).
+
+:::caution[Savings is an estimate, not a measurement]
+As of v0.9.26, CTXone reports token savings as a **conservative, bounded estimate**, not a measured ratio. Earlier versions divided the entire serialized memory graph by each recall injection, producing implausible numbers; savings from a memory tool is inherently a counterfactual (the avoided re-derivation never happened). Treat the flat-memory figures below as an illustrative upper bound, not a literal per-turn multiplier.
+:::
 
 ## The baseline: flat memory
 
@@ -97,9 +105,7 @@ matches, the higher the ratio.
 sections, each recall ships 50 sections — still a huge savings vs flat, but
 lower ratio than pinning just 5.
 
-**Large total graph.** The bigger your graph, the more dramatic the savings.
-A 10,000-fact graph recalling 3 facts is a 3,000× savings even with a
-generous pinned set.
+**Large total graph.** The bigger your graph, the wider the gap between a focused recall and carrying everything flat — but that gap is a bound on the flat baseline, not a literal per-turn multiplier (see the note above).
 
 **Focused contexts.** `ctx remember "..." --context licensing` groups facts
 into `/memory/licensing/*`. Recalls can then hit that one sub-tree cleanly.
@@ -230,5 +236,5 @@ Structural search + confidence scoring + pinned context gives you:
 - Predictable ranking (token matches + pinned-first)
 - Clean token math (you know exactly what went into each response)
 
-See [ARCHITECTURE.md](ARCHITECTURE.md#what-the-hub-is-not) for more on this
+See [ARCHITECTURE.md](/how-it-works/architecture/#what-the-hub-is-not) for more on this
 design choice.

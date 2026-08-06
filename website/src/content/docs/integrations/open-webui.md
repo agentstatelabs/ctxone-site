@@ -1,5 +1,9 @@
-# CTXone for Open WebUI
-
+---
+title: "Open WebUI"
+description: "CTXone ships two Open WebUI plugins out of the box:"
+sidebar:
+  order: 2
+---
 CTXone ships two Open WebUI plugins out of the box:
 
 - **Tool** — function-calling tools the model can invoke explicitly
@@ -33,7 +37,7 @@ when the model *knows* it wants to save something important, like
 ## Install
 
 You need a running CTXone Hub somewhere Open WebUI can reach. The
-[Quickstart](QUICKSTART.md) covers that — easiest is
+[Quickstart](/getting-started/quickstart/) covers that — easiest is
 `docker compose up` from the repo root, which exposes the Hub on
 `http://localhost:3001`.
 
@@ -42,7 +46,7 @@ You need a running CTXone Hub somewhere Open WebUI can reach. The
 1. In Open WebUI: **Admin Panel → Functions → +**
 2. Paste the entire contents of
    [`bindings/python/src/ctxone/integrations/openwebui.py`](../bindings/python/src/ctxone/integrations/openwebui.py)
-3. Save. Open WebUI reads the `requirements: ctxone>=0.73.0` line in
+3. Save. Open WebUI reads the `requirements: ctxone>=0.9.0` line in
    the docstring frontmatter and auto-installs the client into its
    Python environment (make sure
    `ENABLE_PIP_INSTALL_FRONTMATTER_REQUIREMENTS=true` is set in your
@@ -195,6 +199,6 @@ blame panel shows which user wrote each fact via Open WebUI and when.
 
 ## Related docs
 
-- [QUICKSTART.md](QUICKSTART.md) — spinning up a Hub
-- [INTEGRATIONS.md](INTEGRATIONS.md) — MCP wiring for Claude Code, Cursor, etc.
-- [VISION.md](VISION.md) — why CTXone exists at all
+- [QUICKSTART.md](/getting-started/quickstart/) — spinning up a Hub
+- [INTEGRATIONS.md](/integrations/ai-coding-tools/) — MCP wiring for Claude Code, Cursor, etc.
+- [VISION.md](/why-ctxone/vision/) — why CTXone exists at all

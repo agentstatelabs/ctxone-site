@@ -1,5 +1,9 @@
-# Context Anxiety
-
+---
+title: "Context anxiety"
+description: "*Coined by Craig Brown, 2026-04-13*"
+sidebar:
+  order: 2
+---
 *Coined by Craig Brown, 2026-04-13*
 
 ## Definition

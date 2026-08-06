@@ -1,5 +1,9 @@
-# Troubleshooting
-
+---
+title: "Troubleshooting"
+description: "Top errors you'll hit and how to fix them. Run `ctx doctor` first — it catches most of these automatically and suggests fixes."
+sidebar:
+  order: 2
+---
 Top errors you'll hit and how to fix them. Run `ctx doctor` first — it
 catches most of these automatically and suggests fixes.
 
@@ -134,7 +138,7 @@ project-heavy graph matches every fact. Try a more specific query.
 pinned content alone eats the budget. Review with `ctx pinned` and unpin
 (via `ctx forget`) anything that's not actually critical.
 
-See [TOKEN_SAVINGS.md](TOKEN_SAVINGS.md) for the full breakdown.
+See [TOKEN_SAVINGS.md](/how-it-works/token-savings/) for the full breakdown.
 
 ## 6. `branch not found: <name>` when writing
 

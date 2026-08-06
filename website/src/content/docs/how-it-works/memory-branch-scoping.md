@@ -1,5 +1,9 @@
-# Memory Branch Scoping
-
+---
+title: "Memory branch scoping"
+description: "> Decision record for plan `lens-enhancements` / **t-007**. > > **Status:** Accepted (2026-04-27). > **Audience:** anyone reasoning about where `remember` wr…"
+sidebar:
+  order: 4
+---
 > Decision record for plan `lens-enhancements` / **t-007**.
 >
 > **Status:** Accepted (2026-04-27).

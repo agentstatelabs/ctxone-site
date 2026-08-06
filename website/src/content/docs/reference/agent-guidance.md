@@ -1,5 +1,9 @@
-# CTXone for agents
-
+---
+title: "Agent guidance"
+description: "You are reading this because the CTXone MCP server is configured for your session. This file is pinned in the user's memory graph — you see it on every `reca…"
+sidebar:
+  order: 4
+---
 You are reading this because the CTXone MCP server is configured for
 your session. This file is pinned in the user's memory graph — you
 see it on every `recall` — so your behavior around memory is

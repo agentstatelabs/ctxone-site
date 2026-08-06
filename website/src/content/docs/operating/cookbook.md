@@ -1,5 +1,9 @@
-# Cookbook
-
+---
+title: "Cookbook"
+description: "Real-world recipes for putting CTXone into a developer workflow. Every recipe is self-contained and copy-pasteable."
+sidebar:
+  order: 1
+---
 Real-world recipes for putting CTXone into a developer workflow. Every recipe
 is self-contained and copy-pasteable.
 

@@ -1,5 +1,9 @@
-# ASD Code Intelligence Integration
-
+---
+title: "ASD code intelligence"
+description: "CTXone integrates with [AgentStateDeveloper (ASD)](https://github.com/agentstatelabs/AgentStateDeveloper) to give AI agents structured, queryable access to y…"
+sidebar:
+  order: 3
+---
 CTXone integrates with
 [AgentStateDeveloper (ASD)](https://github.com/agentstatelabs/AgentStateDeveloper)
 to give AI agents structured, queryable access to your codebase —
@@ -296,6 +300,6 @@ name. Run `code_repos` to see the registered names.
 
 ## See also
 
-- [MCP_TOOLS.md](MCP_TOOLS.md) — full tool reference including code tools
-- [CLI_REFERENCE.md](CLI_REFERENCE.md) — `ctx serve` flags and `ctxone-hub` options
+- [MCP_TOOLS.md](/reference/mcp-tools/) — full tool reference including code tools
+- [CLI_REFERENCE.md](/reference/cli/) — `ctx serve` flags and `ctxone-hub` options
 - [ASD documentation](https://docs.agentstatelabs.com/asd/) — indexing, ledger, effects

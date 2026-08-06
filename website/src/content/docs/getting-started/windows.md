@@ -1,8 +1,12 @@
-# Running CTXone on Windows
-
+---
+title: "Windows"
+description: "A complete Windows guide: install, first run, AI tool setup, background service, update, uninstall, and troubleshooting. For the cross-platform quickstart, s…"
+sidebar:
+  order: 2
+---
 A complete Windows guide: install, first run, AI tool setup, background
 service, update, uninstall, and troubleshooting. For the cross-platform
-quickstart, see [QUICKSTART.md](QUICKSTART.md).
+quickstart, see [QUICKSTART.md](/getting-started/quickstart/).
 
 ## TL;DR
 
@@ -100,7 +104,7 @@ You'll see:
 
 ```
 Starting CTXone Hub on port 3001 (db: C:\Users\you\AppData\Roaming\ctxone\memory.db)
-CTXone Hub v0.60.0
+CTXone Hub v0.9.27
 Storage: C:\Users\you\AppData\Roaming\ctxone\memory.db
 HTTP API listening on http://0.0.0.0:3001
 ```
@@ -398,9 +402,9 @@ A common setup:
 
 ## Next steps
 
-- [Quickstart](QUICKSTART.md) — the cross-platform 5-minute walkthrough
-- [Architecture](ARCHITECTURE.md) — how recall and pinning work
-- [Cookbook](COOKBOOK.md) — real workflow recipes (some assume bash;
+- [Quickstart](/getting-started/quickstart/) — the cross-platform 5-minute walkthrough
+- [Architecture](/how-it-works/architecture/) — how recall and pinning work
+- [Cookbook](/operating/cookbook/) — real workflow recipes (some assume bash;
   most translate to PowerShell with minor tweaks)
-- [CLI Reference](CLI_REFERENCE.md) — every command and flag
-- [Troubleshooting](TROUBLESHOOTING.md) — the full top-10 error list
+- [CLI Reference](/reference/cli/) — every command and flag
+- [Troubleshooting](/operating/troubleshooting/) — the full top-10 error list

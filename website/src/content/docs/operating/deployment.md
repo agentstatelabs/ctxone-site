@@ -1,5 +1,9 @@
-# Deployment & Configuration
-
+---
+title: "Deployment & config"
+description: "How to run the CTXone Hub, and the configuration choices that matter — the **shared daemon** (the standard setup), running it **as a service**, giving an age…"
+sidebar:
+  order: 0
+---
 How to run the CTXone Hub, and the configuration choices that matter — the
 **shared daemon** (the standard setup), running it **as a service**, giving an
 agent its **own memory**, and **securing** the hub with a token when you expose
@@ -18,7 +22,7 @@ refusing to start a second hub against the same db
 ```
 
 This is deliberate — two hubs writing one SQLite file corrupts it (the
-2026-04-28 incident). See [DATA_SAFETY.md](DATA_SAFETY.md). Everything below is
+2026-04-28 incident). See [DATA_SAFETY.md](/operating/data-safety/). Everything below is
 really about *who* holds that single lock.
 
 ## How a hub can run
@@ -323,5 +327,5 @@ launchctl load -w ~/Library/LaunchAgents/com.ctxone.hub.plist
 - **Agent and Lens show different memory** — they're on different db paths
   (topology C). That's isolation working as configured.
 
-See also: [ARCHITECTURE.md](ARCHITECTURE.md) · [DATA_SAFETY.md](DATA_SAFETY.md) ·
-[TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+See also: [ARCHITECTURE.md](/how-it-works/architecture/) · [DATA_SAFETY.md](/operating/data-safety/) ·
+[TROUBLESHOOTING.md](/operating/troubleshooting/)

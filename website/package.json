@@ -4,20 +4,15 @@
 	"version": "0.73.0",
 	"private": true,
 	"scripts": {
-		"dev": "npm run prepare:docs && astro dev",
-		"start": "npm run prepare:docs && astro dev",
-		"build": "npm run prepare:docs && astro build",
+		"dev": "astro dev",
+		"start": "astro dev",
+		"build": "astro build",
 		"preview": "astro preview",
-		"astro": "astro",
-		"prepare:docs": "node scripts/import-docs.mjs"
+		"astro": "astro"
 	},
 	"dependencies": {
-		"@astrojs/starlight": "^0.37.0",
-		"astro": "^5.5.0",
-		"sharp": "^0.33.0"
-	},
-	"overrides": {
-		"@astrojs/sitemap": "3.6.0",
-		"zod": "^3.25.76"
+		"@astrojs/starlight": "^0.38.2",
+		"astro": "^6.0.1",
+		"sharp": "^0.34.2"
 	}
 }

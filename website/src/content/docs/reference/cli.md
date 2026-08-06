@@ -1,8 +1,12 @@
-# CLI Reference
-
+---
+title: "CLI reference"
+description: "Complete reference for the `ctx` command-line tool. For task-oriented recipes, see [COOKBOOK.md](COOKBOOK.md). For the mental model, see [ARCHITECTURE.md](AR…"
+sidebar:
+  order: 1
+---
 Complete reference for the `ctx` command-line tool. For task-oriented
-recipes, see [COOKBOOK.md](COOKBOOK.md). For the mental model, see
-[ARCHITECTURE.md](ARCHITECTURE.md).
+recipes, see [COOKBOOK.md](/operating/cookbook/). For the mental model, see
+[ARCHITECTURE.md](/how-it-works/architecture/).
 
 ## Synopsis
 
@@ -404,6 +408,20 @@ One-line Hub health check plus session token summary. Also shows the
 active project/namespace (and how it was detected) for the current
 directory.
 
+### `ctx help [topic]`
+
+On-demand instruction disclosure — returns per-feature syntax, examples,
+and gotchas instead of carrying every command's docs in context. Omit the
+topic for the full grouped catalog; pass `--manifest` to print this
+binary's feature index. Backed by a shared cross-tool registry, so an
+unknown topic can resolve to the owning tool (`ctx` ↔ `asd`). Mirrors the
+`help` MCP tool — both return byte-identical, version-pinned docs.
+
+```bash
+ctx help                 # full catalog
+ctx help recall          # one feature (name or phrase)
+```
+
 ### `ctx stats`
 
 Detailed token savings breakdown.
@@ -474,7 +492,7 @@ ctxone-hub --http --asd-url myproject=http://127.0.0.1:4120
 - `--asd-url <NAME=URL>` — register a pre-running `asd-serve` endpoint
   (repeatable). Proxies `/api/code/<name>/*` to `<URL>/api/v1/*`.
 
-See [ASD_INTEGRATION.md](ASD_INTEGRATION.md) for the full setup guide.
+See [ASD_INTEGRATION.md](/integrations/asd-integration/) for the full setup guide.
 
 ### `ctx init [options]`
 
@@ -593,6 +611,31 @@ ctx completion bash > /usr/local/etc/bash_completion.d/ctx
 # fish
 ctx completion fish > ~/.config/fish/completions/ctx.fish
 ```
+
+---
+
+## Worktree commands
+
+`ctx worktree` gives each unit of work its own git worktree and
+`plan/<name>` branch, so parallel agents get isolated files and HEAD (they
+can't clobber each other) while sharing the same CTXone brain. It mirrors
+`asd worktree` in the ASD CLI.
+
+### `ctx worktree start <plan>`
+
+Create `../<repo>-wt-<plan>` on a new `plan/<plan>` branch and print its
+path. Open your agent session in that directory to work there.
+
+### `ctx worktree list`
+
+List this repo's plan-scoped worktrees (recovered from `git worktree list`).
+
+### `ctx worktree finish <plan>`
+
+Merge the plan's branch back, then tear the worktree down (force-remove +
+delete branch + prune). Run from anywhere; operates on the main checkout.
+Pass `--push` to push the merged branch, or `--keep` to merge without
+teardown.
 
 ---
 
@@ -805,9 +848,9 @@ Soft-archive. Task data preserved.
 
 ## See also
 
-- [QUICKSTART.md](QUICKSTART.md) — 5-minute get-running guide
-- [COOKBOOK.md](COOKBOOK.md) — practical recipes
-- [ARCHITECTURE.md](ARCHITECTURE.md) — how recall ranks, how branches work
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — common errors and fixes
-- [HTTP_API.md](HTTP_API.md) — REST endpoints for non-CLI integrations
-- [MCP_TOOLS.md](MCP_TOOLS.md) — MCP tools exposed to agents
+- [QUICKSTART.md](/getting-started/quickstart/) — 5-minute get-running guide
+- [COOKBOOK.md](/operating/cookbook/) — practical recipes
+- [ARCHITECTURE.md](/how-it-works/architecture/) — how recall ranks, how branches work
+- [TROUBLESHOOTING.md](/operating/troubleshooting/) — common errors and fixes
+- [HTTP_API.md](/reference/http-api/) — REST endpoints for non-CLI integrations
+- [MCP_TOOLS.md](/reference/mcp-tools/) — MCP tools exposed to agents
