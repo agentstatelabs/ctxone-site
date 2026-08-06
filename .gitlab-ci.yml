@@ -24,10 +24,13 @@ build-docs:
 # GitHub native push triggers do not fire reliably for mirror pushes on this repo,
 # so we explicitly invoke workflow_dispatch via the GitHub API. Requires GH_PAT CI var.
 trigger-github-pages:
-  stage: build
+  stage: .post
   image: curlimages/curl:latest
+  # Run AFTER publish-github mirrors main to GitHub — otherwise this dispatch
+  # races the mirror and the Action rebuilds stale content (as it did once).
+  needs: ["publish-github"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $GITHUB_REPO'
   script:
     - |
       curl -fsS -X POST \
