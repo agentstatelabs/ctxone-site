@@ -19,6 +19,16 @@ on:
   # Allow manual runs from the Actions tab for one-off redeploys
   # (e.g. after a brand asset swap that doesn't touch source).
   workflow_dispatch:
+  # Weekly rebuild so date-gated blog posts enter the STATIC (crawlable)
+  # HTML on their pubDate. Client-side JS already reveals a scheduled
+  # post to live visitors on its date, but search engines see the HTML
+  # produced at build time — so without a rebuild a new post is invisible
+  # to crawlers until the next content push. Posts are dated on Thursdays;
+  # 00:15 UTC Thursday rebuilds right after that week's post goes live.
+  # (GitHub may delay scheduled runs under load; same-day is the intent,
+  # not a hard SLA.)
+  schedule:
+    - cron: '15 0 * * 4'
 
 # Ensure only one deploy runs at a time. A new push to main during an
 # in-flight build will queue behind the current one rather than fight
