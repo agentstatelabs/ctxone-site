@@ -1,0 +1,187 @@
+---
+/**
+ * Use case page: working a large / legacy codebase.
+ *
+ * Audience: engineers on a big codebase whose agents re-read files
+ * every session. Carries the AgentStateDeveloper (ASD) partnership.
+ */
+import LandingLayout from '../../layouts/LandingLayout.astro';
+---
+
+<LandingLayout
+	title="CTXone for large codebases — with AgentStateDeveloper"
+	description="On a big or legacy codebase, agents re-read the same files every session and edit blind to blast radius. CTXone memory plus AgentStateDeveloper code intelligence gives them structure and history together."
+>
+	<section class="section">
+		<div class="container narrow">
+			<div class="eyebrow">Use case</div>
+			<h1>Navigate a large codebase without re-reading it every session.</h1>
+
+			<p class="lede">
+				On a 400k-line codebase, an agent spends the first several
+				thousand tokens of every session re-discovering what it learned
+				yesterday: where the payment logic lives, what calls what, which
+				paths are off-limits. Then it edits a function without seeing
+				that four other modules depend on it.
+			</p>
+
+			<p>
+				This is the case CTXone and
+				<a href="https://github.com/agentstatelabs/AgentStateDeveloper">
+					AgentStateDeveloper
+				</a>
+				(ASD) solve together. CTXone remembers what your team decided;
+				ASD knows what the code actually does. An agent with both edits
+				like someone who already knows the codebase.
+			</p>
+
+			<h2>Two kinds of context, one hub</h2>
+			<ul>
+				<li>
+					<strong>CTXone — remembered context.</strong> "The payment
+					path is frozen until the audit clears." "We migrated off the
+					legacy queue in Q1." Ranked, branchable, and attributable.
+				</li>
+				<li>
+					<strong>ASD — structural context.</strong> Symbols, call
+					graphs, effects, and ledger decisions, indexed and queryable
+					in milliseconds through the same MCP connection.
+				</li>
+			</ul>
+
+			<h2>What the agent does</h2>
+
+			<pre><code class="language-text">{`recall("payment processing")          # CTXone: what did we decide?
+  → [pinned] payment path frozen until audit clears
+
+code_search("charge_card")            # ASD: where is it?
+callers_of("payments.charge_card")    # ASD: blast radius
+  → 4 call sites: billing, retries, admin, webhook
+
+why-did-we("freeze payment path")     # CTXone: trace the decision
+  → blame: security review, 2026-07-30, "SOC 2 evidence"`}</code></pre>
+
+			<p>
+				The agent now knows where the code is, what depends on it, and
+				why it's off-limits — before it changes a line.
+			</p>
+
+			<h2>Setup is one flag</h2>
+
+			<pre><code class="language-bash"># Index the repo once
+asd init && asd index .
+
+# Start the hub with ASD wired in
+ctx serve --http --asd-repo .
+
+# ctx bootstrap will even offer to set ASD up for you</code></pre>
+
+			<h2>What changes</h2>
+			<ul>
+				<li>
+					<strong>Onboarding cost collapses.</strong> Structure is
+					queried, not re-read. The agent asks ASD instead of paging
+					whole files into context.
+				</li>
+				<li>
+					<strong>Fewer blind edits.</strong> <code>callers_of</code>
+					turns "I think this is safe" into a checked blast radius.
+				</li>
+				<li>
+					<strong>Decisions survive the code.</strong> Frozen paths,
+					deprecations, and gotchas live in memory next to the symbols
+					they govern.
+				</li>
+			</ul>
+
+			<p class="more">
+				Next:
+				<a href="/integrations/asd-integration/">ASD integration guide</a>
+				&nbsp;·&nbsp;
+				<a href="/blog/ctxone-plus-agentstatedeveloper/">
+					The partnership, in depth
+				</a>
+				&nbsp;·&nbsp;
+				<a href="/use-cases/">All use cases</a>
+			</p>
+		</div>
+	</section>
+</LandingLayout>
+
+<style>
+	.narrow { max-width: 44rem; }
+
+	.eyebrow {
+		color: var(--ctx-accent);
+		font-family: var(--ctx-font-mono);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		margin-bottom: 0.75rem;
+	}
+
+	h1 {
+		font-size: clamp(1.8rem, 4vw, 2.75rem);
+		font-weight: 800;
+		color: #ffffff;
+		margin: 0 0 1.5rem 0;
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+	}
+
+	h2 {
+		font-size: 1.3rem;
+		color: #ffffff;
+		margin: 2.5rem 0 0.75rem 0;
+	}
+
+	p {
+		color: var(--ctx-text);
+		font-size: 1rem;
+		margin: 0 0 1rem 0;
+		line-height: 1.65;
+	}
+
+	.lede { color: var(--ctx-text-dim); font-size: 1.1rem; }
+
+	ul {
+		color: var(--ctx-text);
+		margin: 0 0 1rem 0;
+		padding-left: 1.25rem;
+		line-height: 1.65;
+	}
+
+	ul li { margin-bottom: 0.65rem; }
+
+	code {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		padding: 0.1rem 0.4rem;
+		border-radius: var(--ctx-radius-sm);
+		font-size: 0.9em;
+		color: var(--ctx-accent-text);
+		font-family: var(--ctx-font-mono);
+	}
+
+	pre {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		border-radius: var(--ctx-radius-md);
+		padding: 1rem 1.25rem;
+		overflow-x: auto;
+		margin: 1.25rem 0;
+	}
+
+	pre code {
+		background: transparent;
+		border: none;
+		padding: 0;
+		color: var(--ctx-text-code);
+		font-size: 0.85rem;
+		line-height: 1.55;
+	}
+
+	.more { color: var(--ctx-text-dim); font-size: 0.9rem; margin-top: 2rem; }
+
+	strong { color: #ffffff; }
+</style>

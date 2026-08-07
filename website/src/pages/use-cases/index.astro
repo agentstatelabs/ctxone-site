@@ -1,0 +1,176 @@
+---
+/**
+ * Use-cases index — the "section" that ties the individual use-case
+ * pages together. Rendered as a card grid, one card per scenario.
+ * The nav "Use cases" link points here.
+ */
+import LandingLayout from '../../layouts/LandingLayout.astro';
+
+type UseCase = {
+	name: string;
+	href: string;
+	audience: string;
+	blurb: string;
+	accent: 'blue' | 'green' | 'amber';
+};
+
+const cases: UseCase[] = [
+	{
+		name: 'AI coding tools',
+		href: '/use-cases/ai-coding/',
+		audience: 'Solo developers',
+		blurb: 'Stop re-explaining your project to Claude every morning. Write a fact once; every AI coding tool remembers it forever.',
+		accent: 'blue',
+	},
+	{
+		name: 'Team shared context',
+		href: '/use-cases/team-shared-context/',
+		audience: 'Engineering teams',
+		blurb: 'One shared hub so a decision made once is known by everyone’s agents — with provenance attributed to real people.',
+		accent: 'green',
+	},
+	{
+		name: 'Large codebases',
+		href: '/use-cases/large-codebase/',
+		audience: 'Big / legacy repos',
+		blurb: 'Pair CTXone memory with AgentStateDeveloper code intelligence so agents know structure and history, not just files.',
+		accent: 'amber',
+	},
+	{
+		name: 'Regulated teams',
+		href: '/use-cases/regulated-teams/',
+		audience: 'Compliance-forward orgs',
+		blurb: 'Auditable agent context: provenance on every write, gates on sensitive paths, self-hosted where your data must live.',
+		accent: 'blue',
+	},
+	{
+		name: 'Self-hosted chat',
+		href: '/use-cases/self-hosted-chat/',
+		audience: 'Open WebUI & friends',
+		blurb: 'Real memory for self-hosted chat — auto-inject relevant facts on every turn, no tool-calling required.',
+		accent: 'green',
+	},
+];
+---
+
+<LandingLayout
+	title="CTXone use cases"
+	description="How CTXone is used in the wild: solo AI coding, shared team context, large codebases with AgentStateDeveloper, regulated deployments, and self-hosted chat."
+>
+	<section class="section">
+		<div class="container">
+			<div class="eyebrow">Use cases</div>
+			<h1>One context engine, many shapes of work.</h1>
+			<p class="lede">
+				The same memory graph serves a solo developer, a whole team, and
+				a regulated org. Here's how CTXone shows up in each.
+			</p>
+
+			<div class="grid">
+				{cases.map((c) => (
+					<a class={`card a-${c.accent}`} href={c.href}>
+						<div class="audience">{c.audience}</div>
+						<h2>{c.name}</h2>
+						<p>{c.blurb}</p>
+						<span class="arrow">Read use case →</span>
+					</a>
+				))}
+			</div>
+		</div>
+	</section>
+</LandingLayout>
+
+<style>
+	.eyebrow {
+		color: var(--ctx-accent);
+		font-family: var(--ctx-font-mono);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		margin-bottom: 0.75rem;
+	}
+
+	h1 {
+		font-size: clamp(1.8rem, 4vw, 2.75rem);
+		font-weight: 800;
+		color: #ffffff;
+		margin: 0 0 1rem 0;
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+	}
+
+	.lede {
+		color: var(--ctx-text-dim);
+		font-size: 1.1rem;
+		margin: 0 0 2.5rem 0;
+		max-width: 40rem;
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.25rem;
+	}
+
+	.card {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		border-radius: var(--ctx-radius-lg);
+		padding: 1.5rem;
+		position: relative;
+		overflow: hidden;
+		text-decoration: none !important;
+		display: flex;
+		flex-direction: column;
+		transition: transform 0.15s, border-color 0.15s;
+	}
+
+	.card::before {
+		content: '';
+		position: absolute;
+		top: 0; left: 0; right: 0;
+		height: 3px;
+	}
+
+	.a-blue::before  { background: var(--ctx-accent);  box-shadow: 0 0 12px rgba(59, 130, 246, 0.5); }
+	.a-green::before { background: var(--ctx-success); box-shadow: 0 0 12px rgba(34, 197, 94, 0.5); }
+	.a-amber::before { background: var(--ctx-warn);    box-shadow: 0 0 12px rgba(252, 211, 77, 0.5); }
+
+	.card:hover {
+		transform: translateY(-2px);
+		border-color: var(--ctx-border-hi);
+	}
+
+	.audience {
+		font-family: var(--ctx-font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--ctx-text-faint);
+		margin-bottom: 0.5rem;
+	}
+
+	.card h2 {
+		font-size: 1.15rem;
+		color: #ffffff;
+		margin: 0 0 0.6rem 0;
+	}
+
+	.card p {
+		color: var(--ctx-text-dim);
+		font-size: 0.9rem;
+		line-height: 1.55;
+		margin: 0 0 1.1rem 0;
+		flex: 1;
+	}
+
+	.arrow {
+		font-family: var(--ctx-font-mono);
+		font-size: 0.8rem;
+		color: var(--ctx-accent-text);
+	}
+
+	@media (max-width: 900px) {
+		.grid { grid-template-columns: 1fr; }
+	}
+</style>

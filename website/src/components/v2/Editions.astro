@@ -1,0 +1,241 @@
+---
+/**
+ * Editions section for the v2 landing — replaces the old "Early access"
+ * framing with a plain three-tier layout: OSS / Team / Enterprise.
+ *
+ * Content is grounded in features.md ("Editions"): everything is OSS
+ * and self-hosted; Team adds a shared hub; Enterprise adds
+ * multi-tenancy, RBAC/SSO, and audit.
+ */
+
+type Edition = {
+	name: string;
+	price: string;
+	tagline: string;
+	features: string[];
+	cta: { label: string; href: string };
+	accent: 'green' | 'blue' | 'amber';
+	featured?: boolean;
+};
+
+const editions: Edition[] = [
+	{
+		name: 'OSS',
+		price: 'Free · self-hosted',
+		tagline: 'The whole engine, on your machine. No account, no telemetry.',
+		features: [
+			'All 65 MCP tools + REST API + Lens UI',
+			'Memory, plans, branches, taint, provenance',
+			'Single-user hub on your laptop or a box you own',
+			'SQLite or Postgres storage',
+			'Source-available (BSL-1.1 → Apache-2.0)',
+		],
+		cta: { label: 'Install now →', href: '/getting-started/quickstart/' },
+		accent: 'green',
+	},
+	{
+		name: 'Team',
+		price: 'For shared graphs',
+		tagline: 'One hub your whole team points at, so context is shared by default.',
+		features: [
+			'Everything in OSS',
+			'Shared team Hub with per-user identity',
+			'Branch workflows across contributors',
+			'Provenance attributed to real users',
+			'Priority support',
+		],
+		cta: { label: 'Learn more →', href: '/editions/#team' },
+		accent: 'blue',
+		featured: true,
+	},
+	{
+		name: 'Enterprise',
+		price: 'For regulated scale',
+		tagline: 'Multi-tenant, governed, and auditable for org-wide agent deployments.',
+		features: [
+			'Everything in Team',
+			'Multi-tenancy + RBAC',
+			'SSO / SAML',
+			'Audit bundles & policy governance',
+			'Data residency & compliance support (HIPAA, SOC 2, GDPR)',
+			'Direct founder access & roadmap influence',
+		],
+		cta: { label: 'Learn more →', href: '/editions/#enterprise' },
+		accent: 'amber',
+	},
+];
+---
+
+<section class="section editions">
+	<div class="container">
+		<div class="eyebrow"><span class="eyebrow-text">EDITIONS //</span></div>
+		<h2 class="section-title">Start free. Scale when your team does.</h2>
+		<p class="section-lede">
+			The same engine runs at every tier — Team and Enterprise add shared
+			hubs, identity, and governance on top of the open core. No feature is
+			held hostage; the paid tiers are about running CTXone for many people,
+			not unlocking the product.
+		</p>
+
+		<div class="grid">
+			{editions.map((e) => (
+				<article class={`card a-${e.accent} ${e.featured ? 'featured' : ''}`}>
+					{e.featured && <div class="ribbon">Most teams start here</div>}
+					<div class="head">
+						<h3>{e.name}</h3>
+						<div class="price">{e.price}</div>
+					</div>
+					<p class="tagline">{e.tagline}</p>
+					<ul>
+						{e.features.map((f) => (
+							<li>{f}</li>
+						))}
+					</ul>
+					<a class="cta" href={e.cta.href}>{e.cta.label}</a>
+				</article>
+			))}
+		</div>
+	</div>
+</section>
+
+<style>
+	.editions {
+		background:
+			radial-gradient(ellipse 60% 50% at 50% 0%, rgba(59, 130, 246, 0.05), transparent 60%),
+			var(--ctx-bg);
+	}
+
+	.eyebrow {
+		display: inline-block;
+		padding: 0.3rem 0.8rem;
+		background: rgba(59, 130, 246, 0.08);
+		border: 1px solid rgba(59, 130, 246, 0.28);
+		border-radius: 999px;
+		font-family: var(--ctx-font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.1em;
+		color: var(--ctx-accent);
+		margin-bottom: 1rem;
+	}
+
+	.eyebrow-text { font-weight: 700; }
+
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.25rem;
+		margin-top: 0.5rem;
+		align-items: start;
+	}
+
+	.card {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		border-radius: var(--ctx-radius-lg);
+		padding: 1.6rem 1.5rem;
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+	}
+
+	.card.featured {
+		border-color: rgba(59, 130, 246, 0.5);
+		box-shadow: 0 0 24px rgba(59, 130, 246, 0.08);
+	}
+
+	.ribbon {
+		position: absolute;
+		top: -0.7rem;
+		left: 1.5rem;
+		background: var(--ctx-accent);
+		color: #fff;
+		font-size: 0.65rem;
+		font-family: var(--ctx-font-mono);
+		letter-spacing: 0.06em;
+		padding: 0.25rem 0.7rem;
+		border-radius: 999px;
+		text-transform: uppercase;
+	}
+
+	.head { margin-bottom: 0.85rem; }
+
+	.card h3 {
+		margin: 0;
+		font-size: 1.35rem;
+		color: #ffffff;
+	}
+
+	.a-green h3 { color: #ffffff; }
+
+	.price {
+		font-family: var(--ctx-font-mono);
+		font-size: 0.78rem;
+		margin-top: 0.25rem;
+	}
+
+	.a-green .price { color: var(--ctx-success); }
+	.a-blue .price  { color: var(--ctx-accent-text); }
+	.a-amber .price { color: var(--ctx-warn); }
+
+	.tagline {
+		color: var(--ctx-text-dim);
+		font-size: 0.9rem;
+		line-height: 1.55;
+		margin: 0 0 1.1rem 0;
+	}
+
+	ul {
+		list-style: none;
+		margin: 0 0 1.5rem 0;
+		padding: 0;
+		flex: 1;
+	}
+
+	li {
+		position: relative;
+		padding-left: 1.4rem;
+		color: var(--ctx-text);
+		font-size: 0.88rem;
+		line-height: 1.5;
+		margin-bottom: 0.6rem;
+	}
+
+	li::before {
+		content: '→';
+		position: absolute;
+		left: 0;
+		color: var(--ctx-text-faint);
+	}
+
+	.a-green li::before { color: var(--ctx-success); }
+	.a-blue li::before  { color: var(--ctx-accent); }
+	.a-amber li::before { color: var(--ctx-warn); }
+
+	.cta {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.65rem 1rem;
+		border-radius: var(--ctx-radius-md);
+		font-size: 0.9rem;
+		font-weight: 600;
+		text-decoration: none;
+		border: 1px solid var(--ctx-border-hi);
+		background: var(--ctx-panel-hi);
+		color: #fff;
+		transition: all 0.12s;
+	}
+
+	.cta:hover { text-decoration: none; border-color: var(--ctx-border-hi); }
+
+	.a-blue .cta {
+		background: var(--ctx-accent);
+		border-color: var(--ctx-accent);
+	}
+	.a-blue .cta:hover { background: var(--ctx-accent-hover); }
+
+	@media (max-width: 900px) {
+		.grid { grid-template-columns: 1fr; }
+	}
+</style>

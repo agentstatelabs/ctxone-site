@@ -1,16 +1,19 @@
 ---
 /**
- * Blog index — lists non-draft posts from the `blog` content
- * collection, newest first. Empty state is rendered when no
- * published posts exist yet (which will be true at launch since
- * the first post ships as draft).
+ * Blog index — lists non-draft posts, newest first.
+ *
+ * Every non-draft post is rendered into the page, but each item is
+ * tagged with its pubDate and future-dated ones are hidden. A small
+ * inline script reconciles visibility against the visitor's current
+ * date on load — so the weekly drip happens in the browser, with no
+ * scheduled rebuild. `data-count` lets the script swap in the empty
+ * state if nothing is live yet.
  */
-import { getCollection } from 'astro:content';
 import LandingLayout from '../../layouts/LandingLayout.astro';
+import { getListablePosts } from '../../lib/posts';
 
-const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
-);
+const posts = await getListablePosts();
+const buildNow = Date.now();
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
 	year: 'numeric',
@@ -32,43 +35,66 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
 				we're learning while building CTXone.
 			</p>
 
-			{
-				posts.length === 0 ? (
-					<div class="empty">
-						<p>
-							No posts yet. Subscribe to know when the
-							first one lands.
-						</p>
-						<a
-							class="btn btn-secondary"
-							href="https://github.com/ctxone/ctxone"
-							rel="noopener"
-						>
-							Watch on GitHub
+			<div class="empty" id="blog-empty" hidden>
+				<p>
+					No posts yet. Subscribe to know when the first one
+					lands.
+				</p>
+				<a
+					class="btn btn-secondary"
+					href="https://github.com/ctxone/ctxone"
+					rel="noopener"
+				>
+					Watch on GitHub
+				</a>
+			</div>
+
+			<ul class="post-list" id="blog-list">
+				{posts.map((post) => (
+					<li
+						class="post-item"
+						data-pubdate={post.data.pubDate.toISOString()}
+						hidden={post.data.pubDate.valueOf() > buildNow}
+					>
+						<a href={`/blog/${post.id}/`} class="post-link">
+							<div class="post-meta">
+								<time datetime={post.data.pubDate.toISOString()}>
+									{dateFormatter.format(post.data.pubDate)}
+								</time>
+								<span class="dot-sep">·</span>
+								<span class="author">{post.data.author}</span>
+							</div>
+							<h2 class="post-title">{post.data.title}</h2>
+							<p class="post-desc">{post.data.description}</p>
 						</a>
-					</div>
-				) : (
-					<ul class="post-list">
-						{posts.map((post) => (
-							<li class="post-item">
-								<a href={`/blog/${post.id}/`} class="post-link">
-									<div class="post-meta">
-										<time datetime={post.data.pubDate.toISOString()}>
-											{dateFormatter.format(post.data.pubDate)}
-										</time>
-										<span class="dot-sep">·</span>
-										<span class="author">{post.data.author}</span>
-									</div>
-									<h2 class="post-title">{post.data.title}</h2>
-									<p class="post-desc">{post.data.description}</p>
-								</a>
-							</li>
-						))}
-					</ul>
-				)
-			}
+					</li>
+				))}
+			</ul>
 		</div>
 	</section>
+
+	<script is:inline>
+		// Client-side drip gate: reveal only posts whose pubDate has
+		// arrived, evaluated against the visitor's clock at load time.
+		// This is what lets a future-dated post go live on its date with
+		// no site rebuild. Draft posts are never shipped, so they can't
+		// leak here.
+		(function () {
+			var now = Date.now();
+			var items = document.querySelectorAll('#blog-list .post-item');
+			var live = 0;
+			items.forEach(function (li) {
+				var d = Date.parse(li.getAttribute('data-pubdate'));
+				var future = isFinite(d) && d > now;
+				li.hidden = future;
+				if (!future) live++;
+			});
+			var empty = document.getElementById('blog-empty');
+			var list = document.getElementById('blog-list');
+			if (empty) empty.hidden = live !== 0;
+			if (list) list.hidden = live === 0;
+		})();
+	</script>
 </LandingLayout>
 
 <style>

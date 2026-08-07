@@ -1,0 +1,155 @@
+---
+/**
+ * "One system, four surfaces" — orients the reader on what CTXone
+ * actually is now. Hub / Engine / Lens / ctx CLI. This is the piece
+ * the old landing page never told: it isn't a library, it's a system.
+ */
+
+type Surface = {
+	tag: string;
+	name: string;
+	sub: string;
+	body: string;
+	accent: 'blue' | 'green' | 'amber' | 'dim';
+};
+
+const surfaces: Surface[] = [
+	{
+		tag: 'server/',
+		name: 'Hub',
+		sub: 'MCP server + REST API',
+		body: 'One daemon that serves 65 MCP tools, a REST API, and the web UI. Your tools connect to it by URL — no per-tool database, no drift.',
+		accent: 'blue',
+	},
+	{
+		tag: 'engine/',
+		name: 'Engine',
+		sub: 'the memory + graph core',
+		body: 'The AgentStateGraph: a content-addressed graph of facts, decisions, plans, and sessions with branchable history and O(log n) recall.',
+		accent: 'green',
+	},
+	{
+		tag: 'web/',
+		name: 'Lens',
+		sub: 'the web UI',
+		body: 'A dashboard for what your agents know: browse memory, plans, sessions, history, branches, taint, and diffs — all in the browser.',
+		accent: 'amber',
+	},
+	{
+		tag: 'cli/',
+		name: 'ctx',
+		sub: 'the command line',
+		body: 'Everything the agents can do, you can do from a shell: remember, recall, plan, branch, merge, blame, why-did-we, doctor.',
+		accent: 'dim',
+	},
+];
+---
+
+<section class="section surfaces">
+	<div class="container">
+		<div class="eyebrow"><span class="eyebrow-text">ARCHITECTURE //</span></div>
+		<h2 class="section-title">One system. Four surfaces.</h2>
+		<p class="section-lede">
+			CTXone isn't a library you import — it's a self-hosted system your
+			whole toolchain points at. Install once, and Claude Code, Cursor,
+			VS Code, your chat UI, and your shell all read and write the same
+			graph.
+		</p>
+
+		<div class="grid">
+			{surfaces.map((s) => (
+				<article class={`card a-${s.accent}`}>
+					<div class="tag">{s.tag}</div>
+					<h3>CTXone {s.name}</h3>
+					<div class="sub">{s.sub}</div>
+					<p>{s.body}</p>
+				</article>
+			))}
+		</div>
+	</div>
+</section>
+
+<style>
+	.surfaces {
+		background:
+			radial-gradient(ellipse 50% 40% at 20% 0%, rgba(59, 130, 246, 0.05), transparent 60%),
+			var(--ctx-bg);
+	}
+
+	.eyebrow {
+		display: inline-block;
+		padding: 0.3rem 0.8rem;
+		background: rgba(59, 130, 246, 0.08);
+		border: 1px solid rgba(59, 130, 246, 0.28);
+		border-radius: 999px;
+		font-family: var(--ctx-font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.1em;
+		color: var(--ctx-accent);
+		margin-bottom: 1rem;
+	}
+
+	.eyebrow-text { font-weight: 700; }
+
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 1rem;
+		margin-top: 0.5rem;
+	}
+
+	.card {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		border-radius: var(--ctx-radius-lg);
+		padding: 1.35rem;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.card::before {
+		content: '';
+		position: absolute;
+		top: 0; left: 0; right: 0;
+		height: 3px;
+	}
+
+	.a-blue::before  { background: var(--ctx-accent);  box-shadow: 0 0 12px rgba(59, 130, 246, 0.5); }
+	.a-green::before { background: var(--ctx-success); box-shadow: 0 0 12px rgba(34, 197, 94, 0.5); }
+	.a-amber::before { background: var(--ctx-warn);    box-shadow: 0 0 12px rgba(252, 211, 77, 0.5); }
+	.a-dim::before   { background: var(--ctx-text-faint); }
+
+	.tag {
+		font-family: var(--ctx-font-mono);
+		font-size: 0.7rem;
+		color: var(--ctx-text-faint);
+		margin-bottom: 0.6rem;
+	}
+
+	.card h3 {
+		margin: 0;
+		font-size: 1.1rem;
+		color: #ffffff;
+	}
+
+	.sub {
+		font-size: 0.75rem;
+		color: var(--ctx-text-faint);
+		font-family: var(--ctx-font-mono);
+		margin: 0.15rem 0 0.85rem 0;
+	}
+
+	.card p {
+		color: var(--ctx-text-dim);
+		font-size: 0.88rem;
+		line-height: 1.55;
+		margin: 0;
+	}
+
+	@media (max-width: 900px) {
+		.grid { grid-template-columns: 1fr 1fr; }
+	}
+	@media (max-width: 520px) {
+		.grid { grid-template-columns: 1fr; }
+	}
+</style>

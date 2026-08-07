@@ -1,0 +1,207 @@
+---
+/**
+ * "Pairs with AgentStateDeveloper" landing section. Positions ASD as
+ * the structural half of context (code intelligence) to CTXone's
+ * remembered half (memory). Links out to the integration guide, the
+ * large-codebase use case, and the partnership blog post.
+ */
+
+type Tool = { name: string; desc: string };
+
+const tools: Tool[] = [
+	{ name: 'code_search', desc: 'Find the symbol behind a concept' },
+	{ name: 'code_read', desc: 'Signature, effects, ledger decisions' },
+	{ name: 'callers_of', desc: 'Blast radius before you edit' },
+	{ name: 'callees_of', desc: 'What a symbol depends on' },
+];
+---
+
+<section class="section asd">
+	<div class="container">
+		<div class="split">
+			<div class="copy">
+				<div class="eyebrow">
+					<span class="dot"></span>
+					<span class="eyebrow-text">PAIRS WITH // AgentStateDeveloper</span>
+				</div>
+				<h2 class="section-title">Memory is half of context. Here's the other half.</h2>
+				<p class="lede">
+					CTXone remembers what your team <em>decided</em>.
+					<a href="https://github.com/agentstatelabs/AgentStateDeveloper" rel="noopener">AgentStateDeveloper</a>
+					knows what your code <em>does</em> — symbols, call graphs,
+					effects, and ledger decisions. Wire ASD into the same Hub and
+					your agents get both halves through one connection.
+				</p>
+				<p class="lede">
+					An agent that can <code>recall</code> a frozen decision
+					<em>and</em> check <code>callers_of</code> before it edits is
+					an agent that works like someone who already knows the
+					codebase. Setup is one flag — <code>ctx bootstrap</code> even
+					offers to install ASD for you.
+				</p>
+				<div class="links">
+					<a class="btn btn-primary" href="/use-cases/large-codebase/">See the use case →</a>
+					<a class="btn btn-secondary" href="/integrations/asd-integration/">Integration guide</a>
+				</div>
+			</div>
+
+			<div class="panel">
+				<div class="panel-head">
+					<span class="panel-label">+4 code-intelligence tools</span>
+					<span class="panel-sub">served next to memory, over MCP</span>
+				</div>
+				<ul class="tools">
+					{tools.map((t) => (
+						<li>
+							<code>{t.name}</code>
+							<span>{t.desc}</span>
+						</li>
+					))}
+				</ul>
+				<p class="panel-foot">
+					Read more in
+					<a href="/blog/ctxone-plus-agentstatedeveloper/">the partnership post →</a>
+				</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.asd {
+		background:
+			radial-gradient(ellipse 60% 60% at 80% 0%, rgba(252, 211, 77, 0.05), transparent 60%),
+			var(--ctx-bg);
+	}
+
+	.split {
+		display: grid;
+		grid-template-columns: 1.3fr 1fr;
+		gap: 2.5rem;
+		align-items: center;
+	}
+
+	.eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.55rem;
+		padding: 0.3rem 0.8rem;
+		background: rgba(252, 211, 77, 0.07);
+		border: 1px solid rgba(252, 211, 77, 0.28);
+		border-radius: 999px;
+		font-family: var(--ctx-font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.1em;
+		color: var(--ctx-warn);
+		margin-bottom: 1rem;
+	}
+
+	.eyebrow .dot {
+		width: 7px; height: 7px; border-radius: 50%;
+		background: var(--ctx-warn);
+		box-shadow: 0 0 10px rgba(252, 211, 77, 0.7);
+	}
+
+	.eyebrow-text { font-weight: 700; }
+
+	.lede {
+		color: var(--ctx-text-dim);
+		font-size: 1rem;
+		line-height: 1.65;
+		margin: 0 0 1rem 0;
+		max-width: 34rem;
+	}
+
+	.lede em { color: var(--ctx-text); font-style: italic; }
+
+	.lede code {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		padding: 0.08rem 0.35rem;
+		border-radius: var(--ctx-radius-sm);
+		font-size: 0.88em;
+		color: var(--ctx-accent-text);
+		font-family: var(--ctx-font-mono);
+	}
+
+	.links {
+		display: flex;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+		margin-top: 1.5rem;
+	}
+
+	.panel {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		border-radius: var(--ctx-radius-lg);
+		padding: 1.5rem;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.panel::before {
+		content: '';
+		position: absolute;
+		top: 0; left: 0; right: 0;
+		height: 3px;
+		background: var(--ctx-warn);
+		box-shadow: 0 0 12px rgba(252, 211, 77, 0.5);
+	}
+
+	.panel-head { margin-bottom: 1.1rem; }
+
+	.panel-label {
+		display: block;
+		color: #ffffff;
+		font-weight: 700;
+		font-size: 1rem;
+	}
+
+	.panel-sub {
+		display: block;
+		color: var(--ctx-text-faint);
+		font-family: var(--ctx-font-mono);
+		font-size: 0.72rem;
+		margin-top: 0.2rem;
+	}
+
+	.tools {
+		list-style: none;
+		margin: 0 0 1.1rem 0;
+		padding: 0;
+	}
+
+	.tools li {
+		display: flex;
+		align-items: baseline;
+		gap: 0.75rem;
+		padding: 0.55rem 0;
+		border-bottom: 1px dashed var(--ctx-border);
+	}
+
+	.tools li:last-child { border-bottom: none; }
+
+	.tools code {
+		font-family: var(--ctx-font-mono);
+		font-size: 0.82rem;
+		color: var(--ctx-warn);
+		flex-shrink: 0;
+		min-width: 8.5rem;
+	}
+
+	.tools span {
+		color: var(--ctx-text-dim);
+		font-size: 0.85rem;
+	}
+
+	.panel-foot {
+		margin: 0;
+		font-size: 0.82rem;
+		color: var(--ctx-text-faint);
+	}
+
+	@media (max-width: 860px) {
+		.split { grid-template-columns: 1fr; gap: 1.75rem; }
+	}
+</style>
