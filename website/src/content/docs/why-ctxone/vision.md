@@ -1,6 +1,6 @@
 ---
 title: "Vision"
-description: ""
+description: "Why a self-hosted context engine breaks the context-cost paradox — and what CTXone is building toward for individuals, teams, and enterprises."
 sidebar:
   order: 1
 ---
@@ -34,80 +34,37 @@ Every session commits what it learns. Every new session loads only what's
 relevant. The agent gets smarter over time without getting more expensive.
 O(log n) scaling on memory costs instead of O(n).
 
-## Why This Is a Million-Dollar Idea
+## Why it holds up
 
-1. **Universal pain.** Every person using AI chat tools has context anxiety.
-   Not some users. All users. The market is the entire AI user base.
+The idea is simple; what makes it durable is that it's real infrastructure,
+not a wrapper:
 
-2. **Immediate demo.** "Watch this fresh session get full project context in
-   3 seconds." The value is obvious in a single demonstration.
+- **Structured, not a blob.** A memory graph with intent, confidence, and
+  provenance on every write does things a vector store (similarity only) and a
+  flat memory file (bulk load only) can't: rank within a token budget, trace a
+  fact to its source, and branch speculative context.
+- **Measurable, not vibes.** Every `recall` reports tokens sent versus the
+  flat-memory baseline. The savings ratio starts around 5× on day one and
+  climbs as the graph grows — the baseline gets bigger while a targeted recall
+  stays small. See [Token savings](/how-it-works/token-savings/).
+- **Compounding.** The more an agent works, the more the graph knows, and the
+  more valuable it becomes — without getting more expensive per turn. Context
+  you can trust is worth more the longer you've lived in it.
+- **Yours.** Self-hosted, zero telemetry, source-available. The graph is a file
+  you own; nothing about your project leaves your machine unless you send it.
 
-3. **Measurable ROI.** Token reduction is not a vibes improvement — it's a
-   number that CFOs can put in a spreadsheet. The savings ratio starts around
-   5× on day one and climbs as the memory graph grows; on mature graphs with
-   hundreds of pinned facts the ratio reaches double digits. Enterprise license
-   pays for itself in the first week of token savings alone.
+## What it's for
 
-4. **Unique capability.** No existing tool offers structured, searchable,
-   blameable, branchable agent memory with confidence scoring. Vector stores
-   do similarity search. Flat files do bulk loading. Neither does what
-   AgentStateGraph does.
+The same engine serves a solo developer, a whole team, and a regulated
+organization — the difference is who shares the graph and how it's governed,
+not which features are unlocked:
 
-5. **Infrastructure lock-in.** Once an organization's agents build up a memory
-   graph with thousands of facts, decisions, and blame trails, switching costs
-   are enormous. This is infrastructure, not a feature.
+- **Individuals** get persistent, searchable, transparent memory across every
+  MCP-compatible tool. Close sessions freely; start new ones instantly.
+- **Teams** point one shared Hub at their whole toolchain, so a decision made
+  once is known by everyone's agents, attributed to real people.
+- **Enterprises** add multi-tenancy, RBAC/SSO, audit bundles, and policy
+  governance on top of the open core.
 
-6. **Multiple revenue paths.** MCP marketplace (individual users), SaaS
-   (try-before-you-buy), Standard tier (teams), Enterprise (regulated
-   industries). The same product serves every segment.
-
-## The Three Messages
-
-For **developers** (bottom-up adoption):
-"Your AI sessions don't have to start from zero. AgentStateGraph gives them
-persistent memory — searchable, structured, and transparent. Close sessions
-freely. Start new ones instantly. No more context anxiety."
-
-For **enterprises** (top-down sales):
-"Your agents waste tokens re-learning context that was already known.
-CTXone's structured memory reduces per-turn token costs — starting around 5×
-on day one and climbing into double digits as the graph matures — while making
-every session consistently productive. Plus: full accountability — see exactly
-what every agent knows, when it learned it, and at what confidence."
-
-For **the internet** (viral content):
-"Context anxiety (n.) — the fear of closing an AI session because you'll lose
-everything it learned. Four sessions open, each with different context. Can't
-close any of them. Sound familiar?
-
-There's a fix. It's called AgentStateGraph."
-
-## The Roadmap
-
-### Phase 1: Memory MCP Server
-- Add `memory_*` tools to existing agentstategraph-mcp binary
-- 6 operations: remember, recall, context, summarize_session, what_changed_since, why_did_we
-- Works with Claude Code, Cursor, any MCP-compatible tool
-- Ship alongside the public launch of AgentStateGraph
-
-### Phase 2: "Context Anxiety" Blog Post + Landing Page
-- Define the term, own the search result
-- Add "Eliminate context anxiety" section to agentstategraph.dev
-- Publish same week as public launch
-- Social media campaign around the coined term
-
-### Phase 3: ThreadWeaver Integration
-- ThreadWeaver uses AgentStateGraph memory natively
-- "The chat app that never forgets"
-- Demo: close a ThreadWeaver conversation, open a new one, context preserved
-
-### Phase 4: Standalone Memory Product
-- Separate landing page: memory.agentstategraph.dev (or contextanxiety.dev?)
-- MCP marketplace listing
-- Targeted at individual developers first, then teams
-
-### Phase 5: Enterprise Memory
-- Team-shared memory graphs
-- Access control on memory branches (who can see/write what)
-- Audit trail on agent knowledge (when did the agent learn X? from whom?)
-- Compliance: prove your agents' knowledge base is accurate and sourced
+See [Editions](/editions/) for how those tiers differ, and
+[Use cases](/why-ctxone/use-cases/) for where a context engine earns its keep.

@@ -6,7 +6,7 @@
  * Design goal: a SUCCINCT initial message. One headline, one sentence,
  * install, CTAs. The long "context anxiety" narrative moves downstream.
  */
-import InstallOneliner from '../InstallOneliner.astro';
+import InstallMethods from '../InstallMethods.astro';
 ---
 
 <section class="hero">
@@ -14,7 +14,7 @@ import InstallOneliner from '../InstallOneliner.astro';
 	<div class="container">
 		<div class="eyebrow">
 			<span class="dot"></span>
-			<span class="eyebrow-text">CTXONE // context engine for AI agents</span>
+			<span class="eyebrow-text">CTXONE // the agentic system of record</span>
 		</div>
 
 		<h1>
@@ -22,21 +22,28 @@ import InstallOneliner from '../InstallOneliner.astro';
 			<span class="glow">CTXone remembers.</span>
 		</h1>
 
+		<p class="lede lede-theme">
+			CTXone is the <strong class="sor">agentic system of record</strong> —
+			every agent's thinking, decisions, and sessions, captured. It turns
+			scattered development and agent-session silos into durable
+			institutional memory.
+		</p>
+
 		<p class="lede">
-			A self-hosted context engine that gives every AI tool you use a
-			shared, durable brain — <strong class="p p-mem">memory</strong> that
+			Under the hood it's a self-hosted context engine shared across every
+			AI tool you use — <strong class="p p-mem">memory</strong> that
 			survives sessions, <strong class="p p-plan">plans</strong> that
 			survive plan rot, and <strong class="p p-prov">provenance</strong>
 			for every fact. One hub. MCP-native. Zero telemetry.
 		</p>
 
-		<InstallOneliner />
+		<InstallMethods />
 
 		<div class="cta-row">
 			<a class="btn btn-primary" href="/getting-started/quickstart/">
 				Get started →
 			</a>
-			<a class="btn btn-secondary" href="https://github.com/ctxone/ctxone" rel="noopener">
+			<a class="btn btn-secondary" href="https://github.com/AgentStateLabs/CTXone" rel="noopener">
 				View on GitHub
 			</a>
 		</div>
@@ -124,6 +131,18 @@ import InstallOneliner from '../InstallOneliner.astro';
 		margin: 0 0 2.25rem 0;
 		max-width: 42rem;
 		line-height: 1.65;
+	}
+
+	.lede-theme {
+		font-size: 1.3rem;
+		color: var(--ctx-text);
+		margin-bottom: 1.1rem;
+	}
+
+	.lede-theme .sor {
+		color: #ffffff;
+		font-weight: 700;
+		text-shadow: 0 0 22px rgba(59, 130, 246, 0.35);
 	}
 
 	.p { font-weight: 600; }

@@ -12,7 +12,7 @@ quickstart, see [QUICKSTART.md](/getting-started/quickstart/).
 
 ```powershell
 # Install (one line)
-iwr https://raw.githubusercontent.com/ctxone/ctxone-docs/main/install.ps1 | iex
+iwr https://raw.githubusercontent.com/AgentStateLabs/CTXone/main/install.ps1 | iex
 
 # Open a new PowerShell window, then
 ctx serve --http            # in one window
@@ -40,7 +40,7 @@ breaking anything.
 Open **PowerShell** (not Command Prompt) and run:
 
 ```powershell
-iwr https://raw.githubusercontent.com/ctxone/ctxone-docs/main/install.ps1 | iex
+iwr https://raw.githubusercontent.com/AgentStateLabs/CTXone/main/install.ps1 | iex
 ```
 
 This downloads the latest release's `ctx.exe` and `ctxone-hub.exe` into
@@ -53,7 +53,7 @@ If the installer is blocked by PowerShell's execution policy, run:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-iwr https://raw.githubusercontent.com/ctxone/ctxone-docs/main/install.ps1 | iex
+iwr https://raw.githubusercontent.com/AgentStateLabs/CTXone/main/install.ps1 | iex
 ```
 
 This only affects the current window — it doesn't weaken your system
@@ -65,7 +65,7 @@ If you already run Docker Desktop on Windows, you can skip `install.ps1`
 entirely:
 
 ```powershell
-docker run -p 3001:3001 -v ctxone-data:/data ghcr.io/ctxone/ctxone:latest
+docker run -p 3001:3001 -v ctxone-data:/data ghcr.io/agentstatelabs/ctxone:latest
 ```
 
 Docker Desktop pulls the Linux multi-arch image (amd64 or arm64 depending
@@ -247,7 +247,7 @@ Re-run the installer. It overwrites `ctx.exe` and `ctxone-hub.exe` with
 the latest release.
 
 ```powershell
-iwr https://raw.githubusercontent.com/ctxone/ctxone-docs/main/install.ps1 | iex
+iwr https://raw.githubusercontent.com/AgentStateLabs/CTXone/main/install.ps1 | iex
 ```
 
 If the Hub is running via Task Scheduler or NSSM, restart it:
@@ -316,7 +316,7 @@ Use a process-scoped bypass:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-iwr https://raw.githubusercontent.com/ctxone/ctxone-docs/main/install.ps1 | iex
+iwr https://raw.githubusercontent.com/AgentStateLabs/CTXone/main/install.ps1 | iex
 ```
 
 This only affects the current window, not your system policy.
@@ -384,7 +384,7 @@ Your config file stays intact; only the memory is wiped.
 If you're using Docker Desktop instead of `install.ps1`:
 
 - Docker Desktop runs Linux containers via a WSL2-based Linux VM. Our
-  `ghcr.io/ctxone/ctxone` image is a Linux image; it runs in that VM.
+  `ghcr.io/agentstatelabs/ctxone` image is a Linux image; it runs in that VM.
   You never see or touch the VM directly.
 - `docker run -p 3001:3001 ...` forwards port 3001 from the VM to
   Windows localhost. `ctx status` (if you also installed `ctx.exe`)

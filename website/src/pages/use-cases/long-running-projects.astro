@@ -1,0 +1,178 @@
+---
+/**
+ * Use case page: long-running projects driven by plans.
+ *
+ * Audience: anyone running a multi-week effort with an AI agent where
+ * the plan drifts from reality. Centers the Plans primitive — the one
+ * no other use-case page leads with.
+ */
+import LandingLayout from '../../layouts/LandingLayout.astro';
+---
+
+<LandingLayout
+	title="CTXone for long-running projects"
+	description="Multi-week work with an AI agent drowns in plan rot — checklists that lie the moment work starts. CTXone plans are a first-class object that stays anchored to reality with proof."
+>
+	<section class="section">
+		<div class="container narrow">
+			<div class="eyebrow">Use case</div>
+			<h1>Keep a multi-week project anchored, not adrift.</h1>
+
+			<p class="lede">
+				A big effort spans dozens of sessions over weeks. The agent writes
+				a tidy plan on day one — and by day three it's fiction. Step two
+				turned out wrong, step four got skipped, step five is marked
+				"done" with nothing to show for it. The checklist still looks
+				authoritative; it just no longer describes reality. That's plan
+				rot, and it's the default state of every markdown to-do list an
+				agent has ever written.
+			</p>
+
+			<p>
+				CTXone makes the plan a first-class object in the graph — one that
+				survives the session and demands evidence — so a project that
+				takes a month doesn't lose the thread on day three.
+			</p>
+
+			<h2>Plans that survive the session</h2>
+
+			<pre><code class="language-bash"># Stand up a plan the whole project shares
+ctx plan new "auth refactor"
+ctx plan add "extract token validation into middleware"
+ctx plan add "migrate sessions table"
+
+# Weeks later, in a brand-new session:
+ctx plan next
+    → next: extract token validation into middleware
+
+# Done means proven, not just checked
+ctx plan done 1 --proof commit:abc1234</code></pre>
+
+			<p>
+				That <code>--proof</code> flag is the point. A task isn't done
+				because someone typed an <code>x</code> — it's done because it's
+				anchored to a commit, a test run, or an artifact you can go look
+				at. The plan and the work stay married for the life of the
+				project.
+			</p>
+
+			<h2>What changes</h2>
+			<ul>
+				<li>
+					<strong>No more restarting cold.</strong> Open a new session
+					after a week off, ask <code>ctx plan next</code>, and pick up
+					exactly where the project left off.
+				</li>
+				<li>
+					<strong>Progress is provable.</strong> Every completed task
+					carries proof, so "how far along are we?" has a real answer,
+					not a vibe.
+				</li>
+				<li>
+					<strong>Plans branch with context.</strong> Sandbox a
+					speculative direction on a branch — plan and memory together —
+					then diff and merge it when it holds up.
+				</li>
+				<li>
+					<strong>Shared on a team hub.</strong> On CTXone Team, the plan
+					lives on the shared hub, so work-in-flight is visible to
+					everyone instead of trapped in one person's chat history.
+				</li>
+			</ul>
+
+			<h2>Who it's for</h2>
+			<p>
+				Anyone driving a long refactor, migration, or build-out with an AI
+				agent across many sessions — where the cost isn't a single wrong
+				answer, but slowly losing track of where the whole effort stands.
+			</p>
+
+			<p class="more">
+				Next:
+				<a href="/blog/the-cure-for-plan-rot/">The cure for plan rot</a>
+				&nbsp;·&nbsp;
+				<a href="/reference/features/">Features &amp; commands</a>
+				&nbsp;·&nbsp;
+				<a href="/use-cases/">All use cases</a>
+			</p>
+		</div>
+	</section>
+</LandingLayout>
+
+<style>
+	.narrow { max-width: 44rem; }
+
+	.eyebrow {
+		color: var(--ctx-accent);
+		font-family: var(--ctx-font-mono);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		margin-bottom: 0.75rem;
+	}
+
+	h1 {
+		font-size: clamp(1.8rem, 4vw, 2.75rem);
+		font-weight: 800;
+		color: #ffffff;
+		margin: 0 0 1.5rem 0;
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+	}
+
+	h2 {
+		font-size: 1.3rem;
+		color: #ffffff;
+		margin: 2.5rem 0 0.75rem 0;
+	}
+
+	p {
+		color: var(--ctx-text);
+		font-size: 1rem;
+		margin: 0 0 1rem 0;
+		line-height: 1.65;
+	}
+
+	.lede { color: var(--ctx-text-dim); font-size: 1.1rem; }
+
+	ul {
+		color: var(--ctx-text);
+		margin: 0 0 1rem 0;
+		padding-left: 1.25rem;
+		line-height: 1.65;
+	}
+
+	ul li { margin-bottom: 0.65rem; }
+
+	code {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		padding: 0.1rem 0.4rem;
+		border-radius: var(--ctx-radius-sm);
+		font-size: 0.9em;
+		color: var(--ctx-accent-text);
+		font-family: var(--ctx-font-mono);
+	}
+
+	pre {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		border-radius: var(--ctx-radius-md);
+		padding: 1rem 1.25rem;
+		overflow-x: auto;
+		margin: 1.25rem 0;
+	}
+
+	pre code {
+		background: transparent;
+		border: none;
+		padding: 0;
+		color: var(--ctx-text-code);
+		font-size: 0.85rem;
+		line-height: 1.55;
+	}
+
+	.more { color: var(--ctx-text-dim); font-size: 0.9rem; margin-top: 2rem; }
+
+	strong { color: #ffffff; }
+</style>

@@ -6,7 +6,7 @@
  * and is tired of re-explaining their project every morning.
  */
 import LandingLayout from '../../layouts/LandingLayout.astro';
-import InstallOneliner from '../../components/InstallOneliner.astro';
+import InstallMethods from '../../components/InstallMethods.astro';
 ---
 
 <LandingLayout
@@ -38,7 +38,7 @@ import InstallOneliner from '../../components/InstallOneliner.astro';
 			<h2>The three commands that change everything</h2>
 
 			<pre><code class="language-bash"># 1. Install once
-curl -sSL https://raw.githubusercontent.com/ctxone/ctxone/main/install.sh | sh
+curl -sSL https://raw.githubusercontent.com/AgentStateLabs/CTXone/main/install.sh | sh
 
 # 2. Wire into every AI tool you have, in one go
 ctx init
@@ -116,7 +116,7 @@ _ctxone_stats: {
 			</p>
 
 			<h2>Ready to try it?</h2>
-			<InstallOneliner />
+			<InstallMethods />
 
 			<p class="more">
 				Next:
