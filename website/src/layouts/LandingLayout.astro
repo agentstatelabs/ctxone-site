@@ -13,11 +13,15 @@ import SiteFooter from '../components/SiteFooter.astro';
 interface Props {
 	title: string;
 	description?: string;
+	// Override the canonical URL (e.g. point a marketing copy at its
+	// docs original to avoid duplicate-content). Defaults to self.
+	canonical?: string;
 }
 
 const {
 	title,
 	description = 'The self-hosted context engine for AI agents — durable memory, plans, branches, and provenance across every tool you use. MCP-native, zero telemetry.',
+	canonical = Astro.url.href,
 } = Astro.props;
 ---
 
@@ -35,7 +39,7 @@ const {
 		<meta property="og:image" content="https://ctxone.com/og-image.png" />
 		<meta name="twitter:card" content="summary_large_image" />
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-		<link rel="canonical" href={Astro.url.href} />
+		<link rel="canonical" href={canonical} />
 	</head>
 	<body class="landing">
 		<nav class="top-nav">
@@ -45,11 +49,11 @@ const {
 					<span class="brand-text">CTXone</span>
 				</a>
 				<div class="nav-links">
+					<a href="/why/">Why CTXone</a>
 					<a href="/getting-started/quickstart/">Docs</a>
 					<a href="/use-cases/">Use cases</a>
 					<a href="/blog/">Blog</a>
 					<a href="/editions/">Team &amp; Enterprise</a>
-					<a href="/license/">License</a>
 					<a
 						href="https://github.com/AgentStateLabs/CTXone"
 						rel="noopener"

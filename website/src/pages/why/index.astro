@@ -1,0 +1,127 @@
+---
+/**
+ * "Why CTXone" index — the marketing landing for the why-section,
+ * linked from the top nav. A card per essay in the `why` collection,
+ * ordered by frontmatter `order`.
+ */
+import { getCollection } from 'astro:content';
+import LandingLayout from '../../layouts/LandingLayout.astro';
+
+const entries = (await getCollection('why')).sort(
+	(a, b) => a.data.order - b.data.order
+);
+
+const accents = ['blue', 'green', 'amber'] as const;
+---
+
+<LandingLayout
+	title="Why CTXone"
+	description="The case for a self-hosted context engine: the vision, context anxiety, token economics, cost savings, and where it earns its keep."
+>
+	<section class="section">
+		<div class="container">
+			<div class="eyebrow">Why CTXone</div>
+			<h1>Why a context engine — and why self-hosted.</h1>
+			<p class="lede">
+				The thinking behind CTXone: the structural problem it solves, the
+				economics, and where it earns its keep.
+			</p>
+
+			<div class="grid">
+				{entries.map((e, i) => (
+					<a class={`card a-${accents[i % accents.length]}`} href={`/why/${e.id}/`}>
+						<h2>{e.data.title}</h2>
+						<p>{e.data.description}</p>
+						<span class="arrow">Read →</span>
+					</a>
+				))}
+			</div>
+		</div>
+	</section>
+</LandingLayout>
+
+<style>
+	.eyebrow {
+		color: var(--ctx-accent);
+		font-family: var(--ctx-font-mono);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		margin-bottom: 0.75rem;
+	}
+
+	h1 {
+		font-size: clamp(1.8rem, 4vw, 2.75rem);
+		font-weight: 800;
+		color: #ffffff;
+		margin: 0 0 1rem 0;
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+	}
+
+	.lede {
+		color: var(--ctx-text-dim);
+		font-size: 1.1rem;
+		margin: 0 0 2.5rem 0;
+		max-width: 42rem;
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.25rem;
+	}
+
+	.card {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		border-radius: var(--ctx-radius-lg);
+		padding: 1.5rem;
+		position: relative;
+		overflow: hidden;
+		text-decoration: none !important;
+		display: flex;
+		flex-direction: column;
+		transition: transform 0.15s, border-color 0.15s;
+	}
+
+	.card::before {
+		content: '';
+		position: absolute;
+		top: 0; left: 0; right: 0;
+		height: 3px;
+	}
+
+	.a-blue::before  { background: var(--ctx-accent);  box-shadow: 0 0 12px rgba(59, 130, 246, 0.5); }
+	.a-green::before { background: var(--ctx-success); box-shadow: 0 0 12px rgba(34, 197, 94, 0.5); }
+	.a-amber::before { background: var(--ctx-warn);    box-shadow: 0 0 12px rgba(252, 211, 77, 0.5); }
+
+	.card:hover {
+		transform: translateY(-2px);
+		border-color: var(--ctx-border-hi);
+	}
+
+	.card h2 {
+		font-size: 1.15rem;
+		color: #ffffff;
+		margin: 0 0 0.6rem 0;
+	}
+
+	.card p {
+		color: var(--ctx-text-dim);
+		font-size: 0.9rem;
+		line-height: 1.55;
+		margin: 0 0 1.1rem 0;
+		flex: 1;
+	}
+
+	.arrow {
+		font-family: var(--ctx-font-mono);
+		font-size: 0.8rem;
+		color: var(--ctx-accent-text);
+	}
+
+	@media (max-width: 900px) {
+		.grid { grid-template-columns: 1fr; }
+	}
+</style>

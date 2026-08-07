@@ -27,7 +27,22 @@ const blog = defineCollection({
 	}),
 });
 
+/**
+ * `why` — the "Why CTXone" marketing section: LandingLayout-styled
+ * copies of the docs/why-ctxone essays, surfaced from the top nav.
+ * Each page canonicals to its docs original to avoid duplicate content.
+ */
+const why = defineCollection({
+	loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/why' }),
+	schema: z.object({
+		title: z.string(),
+		description: z.string().optional(),
+		order: z.number().default(99),
+	}),
+});
+
 export const collections = {
 	docs: defineCollection({ loader: docsLoader(), schema: docsSchema() }),
 	blog,
+	why,
 };

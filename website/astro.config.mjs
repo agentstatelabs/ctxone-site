@@ -80,6 +80,7 @@ export default defineConfig({
 						{ label: 'MCP tools', slug: 'reference/mcp-tools' },
 						{ label: 'HTTP API', slug: 'reference/http-api' },
 						{ label: 'Agent guidance', slug: 'reference/agent-guidance' },
+						{ label: 'License', link: '/license/' },
 					],
 				},
 				{
