@@ -44,6 +44,22 @@ ctx --version
 # ctx 0.9.27
 ```
 
+**Or: let your agent install it.** Paste this prompt into your coding agent
+(Claude Code, Cursor, Codex, Gemini) and it runs the steps for you — no CLI
+needed first:
+
+```text
+Set up CTXone for this repository. Run each step below, then report back once CTXone is installed, this repo is indexed, and the MCP server is connected.
+
+1. `brew install ctxone` — install the ctx CLI
+2. `ctx agents install --yes` — prime the shared AGENTS.md in the Hub
+
+Optional team layer — also set up AgentStateDeveloper (`asd`): use it for code structure, impact analysis, and change scoping (the `asd` CLI).
+```
+
+This is exactly what [`ctx bootstrap`](/reference/cli/) prints once `ctx` is
+installed — so you can copy it here without needing `ctx` first.
+
 ## 2. Start the Hub
 
 In one terminal:

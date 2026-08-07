@@ -2,8 +2,9 @@
 /**
  * Installer block, three parts:
  *
- *   1. Featured "agent" call-out — the paste-into-your-agent path
- *      (`ctx bootstrap`), highlighted as the fastest way in.
+ *   1. Featured "agent" call-out — the actual paste-into-your-agent
+ *      PROMPT (verbatim what `ctx bootstrap` prints). Paste it into a
+ *      coding agent and it installs + connects CTXone for you.
  *   2. Platform installers as tabs — Homebrew, Shell, Windows.
  *   3. A platform-support strip — macOS (Apple Silicon + Intel),
  *      Linux, Windows.
@@ -19,9 +20,14 @@ type Method = {
 	cmd: string;
 };
 
-const agentCmd = 'ctx bootstrap';
-const agentCaption =
-	'Prints a block you paste into whatever agent you’re already in — it installs and primes CTXone, and offers to set up AgentStateDeveloper too.';
+// The exact block `ctx bootstrap` prints — publish it so users don't
+// need `ctx` first to get it. Keep in sync with the CLI output.
+const agentPrompt = `Set up CTXone for this repository. Run each step below, then report back once CTXone is installed, this repo is indexed, and the MCP server is connected.
+
+1. \`brew install ctxone\` — install the ctx CLI
+2. \`ctx agents install --yes\` — prime the shared AGENTS.md in the Hub
+
+Optional team layer — also set up AgentStateDeveloper (\`asd\`): use it for code structure, impact analysis, and change scoping (the \`asd\` CLI).`;
 
 const methods: Method[] = [
 	{ id: 'brew', label: 'Homebrew', hint: 'macOS', cmd: 'brew tap agentstatelabs/ctxone && brew install ctxone' },
@@ -38,18 +44,17 @@ const platforms = ['macOS · Apple Silicon', 'macOS · Intel', 'Linux', 'Windows
 		<div class="agent-head">
 			<span class="spark" aria-hidden="true">⚡</span>
 			<span class="agent-title">Let your agent install it</span>
-			<span class="agent-badge">fastest</span>
-		</div>
-		<div class="cmd" data-copy={agentCmd}>
-			<code class="cmd-text">
-				<span class="prompt">$</span>
-				<span class="text">{agentCmd}</span>
-			</code>
-			<button type="button" class="copy-btn" aria-label="Copy agent install command">
-				<span class="copy-label">Copy</span>
+			<span class="agent-badge">paste a prompt</span>
+			<button type="button" class="copy-btn head-copy" data-copy={agentPrompt} aria-label="Copy install prompt">
+				<span class="copy-label">Copy prompt</span>
 			</button>
 		</div>
-		<p class="cmd-note">{agentCaption}</p>
+		<pre class="prompt-text">{agentPrompt}</pre>
+		<p class="cmd-note">
+			Paste into Claude Code, Cursor, Codex, or Gemini and it installs and
+			connects CTXone for you — no CLI needed first. (This is exactly what
+			<code>ctx bootstrap</code> prints once <code>ctx</code> is installed.)
+		</p>
 	</div>
 
 	<div class="or">or install directly</div>
@@ -113,11 +118,14 @@ const platforms = ['macOS · Apple Silicon', 'macOS · Intel', 'Linux', 'Windows
 			});
 		});
 
-		root.querySelectorAll<HTMLElement>('.cmd').forEach((el) => {
-			const btn = el.querySelector<HTMLButtonElement>('.copy-btn');
-			const label = btn?.querySelector<HTMLSpanElement>('.copy-label');
-			const text = el.dataset.copy ?? '';
-			if (!btn || !label) return;
+		root.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach((btn) => {
+			const label = btn.querySelector<HTMLSpanElement>('.copy-label');
+			// Copy text lives on the button itself (prompt) or its command box.
+			const src = btn.hasAttribute('data-copy')
+				? btn
+				: btn.closest<HTMLElement>('[data-copy]');
+			const text = src?.getAttribute('data-copy') ?? '';
+			if (!label) return;
 			btn.addEventListener('click', async () => {
 				try {
 					await navigator.clipboard.writeText(text);
@@ -180,6 +188,30 @@ const platforms = ['macOS · Apple Silicon', 'macOS · Intel', 'Linux', 'Windows
 		border: 1px solid rgba(59, 130, 246, 0.4);
 		border-radius: 999px;
 		padding: 0.15rem 0.5rem;
+	}
+
+	.copy-btn.head-copy {
+		margin-left: auto;
+		border: 1px solid var(--ctx-border-hi);
+		border-radius: var(--ctx-radius-sm);
+		background: var(--ctx-panel-hi);
+		padding: 0.3rem 0.7rem;
+		font-size: 0.68rem;
+	}
+
+	.prompt-text {
+		margin: 0;
+		background: var(--ctx-bg);
+		border: 1px solid var(--ctx-border-hi);
+		border-radius: var(--ctx-radius-md);
+		padding: 0.85rem 1rem;
+		font-family: var(--ctx-font-mono);
+		font-size: 0.8rem;
+		line-height: 1.6;
+		color: var(--ctx-text);
+		white-space: pre-wrap;
+		word-break: break-word;
+		overflow-x: auto;
 	}
 
 	.or {

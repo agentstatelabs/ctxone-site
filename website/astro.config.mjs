@@ -29,6 +29,16 @@ export default defineConfig({
 			customCss: ['./src/styles/global.css', './src/styles/theme.css'],
 			sidebar: [
 				{
+					label: 'Why CTXone',
+					items: [
+						{ label: 'Vision', slug: 'why-ctxone/vision' },
+						{ label: 'Context anxiety', slug: 'why-ctxone/context-anxiety' },
+						{ label: 'Token economics', slug: 'why-ctxone/token-economics' },
+						{ label: 'Use cases', slug: 'why-ctxone/use-cases' },
+						{ label: 'Cost savings', slug: 'why-ctxone/cost-savings' },
+					],
+				},
+				{
 					label: 'Getting started',
 					items: [
 						{ label: 'Quickstart', slug: 'getting-started/quickstart' },
@@ -94,17 +104,6 @@ export default defineConfig({
 						{ label: 'Cookbook', slug: 'operating/cookbook' },
 						{ label: 'Troubleshooting', slug: 'operating/troubleshooting' },
 						{ label: 'Data safety', slug: 'operating/data-safety' },
-					],
-				},
-				{
-					label: 'Why CTXone',
-					collapsed: true,
-					items: [
-						{ label: 'Vision', slug: 'why-ctxone/vision' },
-						{ label: 'Context anxiety', slug: 'why-ctxone/context-anxiety' },
-						{ label: 'Token economics', slug: 'why-ctxone/token-economics' },
-						{ label: 'Use cases', slug: 'why-ctxone/use-cases' },
-						{ label: 'Cost savings', slug: 'why-ctxone/cost-savings' },
 					],
 				},
 			],

@@ -30,6 +30,28 @@ A typical agent workflow:
 
 ---
 
+## Install ASD with your agent
+
+The fastest way to add ASD is to let your coding agent do it. Paste this prompt
+into Claude Code, Cursor, Codex, or Gemini and it installs, indexes, and connects
+ASD for you:
+
+```text
+Set up AgentStateDeveloper for this repository. Run each step below, then report back once AgentStateDeveloper is installed, this repo is indexed, and the MCP server is connected.
+
+1. `brew install asd` — install ASD (macOS/Linux; or run the install.sh script)
+2. `asd index .` — index this repository
+3. `asd mcp install && asd skill` — register the MCP server + agent skill
+4. `asd status` — verify the index is built
+
+Optional team layer — also set up CTXone (`ctx`): use it to share decisions, plans, and memory across your team (the `ctx` CLI).
+```
+
+This is exactly what `asd bootstrap` prints once `asd` is installed. Prefer to do
+it by hand? The manual steps are below.
+
+---
+
 ## Prerequisites
 
 1. **ASD installed** — `asd` and `asd-serve` binaries on your `PATH`
