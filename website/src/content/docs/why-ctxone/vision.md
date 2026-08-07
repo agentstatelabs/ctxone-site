@@ -22,8 +22,13 @@ it worse the better it works.
 
 ## The Product
 
-**AgentStateGraph Memory** — persistent, searchable, accountable memory for AI
-agents that breaks the context-cost paradox.
+**CTXone** — a self-hosted **context engine** for AI agents that breaks the
+context-cost paradox. Durable memory is where it started, but memory is one
+primitive of six: it also gives agents **plans** that survive plan rot,
+**branches** for speculative context, **taint** gates on sensitive paths,
+**provenance** (`blame` / `why-did-we`) for every fact, and live **token
+accounting**. All of it rides on the same content-addressed graph
+(AgentStateGraph) and is served over MCP, a REST API, and the `ctx` CLI.
 
 Every session commits what it learns. Every new session loads only what's
 relevant. The agent gets smarter over time without getting more expensive.

@@ -11,7 +11,7 @@ export default defineConfig({
 		starlight({
 			title: 'CTXone',
 			description:
-				'Persistent, searchable, accountable memory for AI agents. Write a fact once — Claude, Cursor, and every other tool you use remembers it forever.',
+				'The self-hosted context engine for AI agents — durable memory, plans, branches, and provenance across every tool you use. MCP-native, zero telemetry.',
 			// The landing page lives in src/pages/index.astro — not a
 			// Starlight doc. We need Starlight to NOT claim the site root.
 			// Its built-in docs land under paths like /getting-started/*.
@@ -80,6 +80,7 @@ export default defineConfig({
 							label: 'ASD code intelligence',
 							slug: 'integrations/asd-integration',
 						},
+						{ label: 'Rust', slug: 'integrations/rust' },
 					],
 				},
 				{

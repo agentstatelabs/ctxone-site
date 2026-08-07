@@ -1,9 +1,9 @@
 ---
-title: CtxOne docs
-description: Persistent, searchable, accountable memory for AI agents.
+title: CTXone docs
+description: The self-hosted context engine for AI agents — memory, plans, branches, and provenance.
 template: splash
 hero:
-  tagline: Memory that survives the session.
+  tagline: The context engine for AI agents. Memory, plans, branches, and provenance — self-hosted, MCP-native.
   actions:
     - text: Quickstart
       link: /getting-started/quickstart/
@@ -15,6 +15,13 @@ hero:
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
+
+CTXone is a self-hosted **context engine**: one Hub your whole toolchain
+points at, giving every AI tool a shared, durable brain. It spans six
+primitives — **memory**, **plans**, **branches**, **taint**,
+**provenance**, and **token accounting** — over four surfaces (Hub,
+Engine, Lens, and the `ctx` CLI). See the full tour in
+[Features & commands](/reference/features/).
 
 <CardGrid>
   <Card title="New here?" icon="rocket">
@@ -31,13 +38,27 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
   <Card title="Integrate" icon="setting">
     Wire CTXone into [AI coding tools](/integrations/ai-coding-tools/) with
-    `ctx init`, or drop the [Open WebUI plugin](/integrations/open-webui/)
-    into a self-hosted chat install.
+    `ctx init`, add code intelligence with
+    [AgentStateDeveloper](/integrations/asd-integration/), or talk to the
+    Hub from any language via the [Rust](/integrations/rust/) /
+    [HTTP API](/reference/http-api/) guides.
   </Card>
 
   <Card title="Reference" icon="open-book">
     Full [CLI](/reference/cli/), [MCP tool](/reference/mcp-tools/), and
     [HTTP API](/reference/http-api/) references — every command, flag,
     endpoint, and response shape.
+  </Card>
+
+  <Card title="Editions" icon="seti:license">
+    OSS is the whole engine, self-hosted. [Team & Enterprise](/editions/)
+    add a shared hub, identity, and governance for groups.
+  </Card>
+
+  <Card title="Use cases" icon="open-book">
+    See CTXone in the wild: [solo AI coding](/use-cases/ai-coding/),
+    [shared team context](/use-cases/team-shared-context/),
+    [large codebases](/use-cases/large-codebase/), and
+    [regulated teams](/use-cases/regulated-teams/).
   </Card>
 </CardGrid>
