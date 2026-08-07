@@ -16,29 +16,25 @@ type Method = {
 	id: string;
 	label: string;
 	hint?: string;
-	// What renders in the box (may be multi-line / annotated).
-	display: string;
-	// What the copy button puts on the clipboard.
-	copy: string;
+	// The command shown in the box and put on the clipboard.
+	cmd: string;
+	// Optional one-line note rendered under the box.
+	caption?: string;
 };
 
 const shell = 'curl -sSL https://raw.githubusercontent.com/AgentStateLabs/CTXone/main/install.sh | sh';
 const brew = 'brew tap agentstatelabs/ctxone && brew install ctxone';
-const agent =
-	'Install CTXone for this project: run ' +
-	'`curl -sSL https://raw.githubusercontent.com/AgentStateLabs/CTXone/main/install.sh | sh`, ' +
-	'start the hub with `ctx serve --http`, wire up my tools with `ctx init`, ' +
-	'then run `ctx bootstrap` and follow it to prime yourself.';
 
 const methods: Method[] = [
-	{ id: 'shell', label: 'Shell', hint: 'macOS · Linux', display: shell, copy: shell },
-	{ id: 'brew', label: 'Homebrew', hint: 'recommended', display: brew, copy: brew },
+	{ id: 'shell', label: 'Shell', hint: 'macOS · Linux', cmd: shell },
+	{ id: 'brew', label: 'Homebrew', hint: 'recommended', cmd: brew },
 	{
 		id: 'agent',
 		label: 'Agent',
 		hint: 'paste into your AI tool',
-		display: agent,
-		copy: agent,
+		cmd: 'ctx bootstrap',
+		caption:
+			'Prints a block you paste into whatever agent you’re already in — it installs and primes CTXone, and offers to set up AgentStateDeveloper too.',
 	},
 ];
 ---
@@ -61,21 +57,16 @@ const methods: Method[] = [
 
 	{methods.map((m, i) => (
 		<div class:list={['panel', { active: i === 0 }]} data-panel={m.id} hidden={i !== 0}>
-			<div class="cmd" data-copy={m.copy}>
+			<div class="cmd" data-copy={m.cmd}>
 				<code class="cmd-text">
-					{m.id === 'agent' ? (
-						<span class="text">{m.display}</span>
-					) : (
-						<>
-							<span class="prompt">$</span>
-							<span class="text">{m.display}</span>
-						</>
-					)}
+					<span class="prompt">$</span>
+					<span class="text">{m.cmd}</span>
 				</code>
 				<button type="button" class="copy-btn" aria-label={`Copy ${m.label} install`}>
 					<span class="copy-label">Copy</span>
 				</button>
 			</div>
+			{m.caption && <p class="cmd-note">{m.caption}</p>}
 		</div>
 	))}
 </div>
@@ -198,10 +189,11 @@ const methods: Method[] = [
 		line-height: 1.5;
 	}
 
-	/* The agent block wraps instead of scrolling — it's prose, not a command. */
-	[data-panel='agent'] .cmd-text {
-		white-space: normal;
-		overflow-x: visible;
+	.cmd-note {
+		margin: 0.55rem 0 0 0;
+		font-size: 0.8rem;
+		line-height: 1.5;
+		color: var(--ctx-text-dim);
 	}
 
 	.prompt {
