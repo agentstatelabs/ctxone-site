@@ -1,86 +1,91 @@
 ---
 title: "Use cases"
-description: ""
+description: "Where a self-hosted context engine earns its keep — from agent memory and multi-agent orchestration to accountable knowledge bases and compliance logging."
 sidebar:
   order: 4
 ---
-## 1. Agent Memory (Highest Leverage)
 
-The blank session problem. Every AI session starts from zero. Users keep multiple
-sessions open to avoid losing context. Memory files are unstructured text dumped
-into context on every turn — wasteful, unsearchable, unaccountable.
+CTXone is a context engine, and context is a broad primitive. The same graph —
+memory, plans, branches, taint, provenance — shows up in a surprising range of
+work. This page is the conceptual tour; for hands-on walkthroughs aimed at a
+specific reader, see the [use-case pages](/use-cases/).
 
-AgentStateGraph as the memory layer:
-- Every fact, preference, decision committed with intent + confidence
-- New sessions query for relevant context (not bulk-load everything)
-- Searchable: "what did we decide about pricing?"
-- Blameable: "where did this preference come from?"
-- Branching: different branches for different projects/contexts
-- Multi-agent: Claude Code, Claude Chat, schedulers — all share the same memory graph
+## 1. Agent memory
 
-**Demo that writes itself:** Start a fresh session. It connects to AgentStateGraph,
-runs 3 queries, has full project context in 3 seconds. No re-explaining.
+The highest-leverage case, and the one most people meet first. Every AI session
+starts from zero, so people keep several open to avoid losing context, and
+memory files get dumped into the window on every turn — wasteful, unsearchable,
+unaccountable.
 
-**Standalone product potential:** MCP server that any AI chat tool can connect to.
-Claude Code, Cursor, Windsurf, GPT — any MCP-compatible agent gets persistent memory.
+CTXone replaces that with a graph:
 
-## 2. Agent Orchestration State
+- Every fact, preference, and decision is committed with an intent and a
+  confidence score.
+- New sessions **query** for relevant context instead of bulk-loading
+  everything.
+- It's **searchable** — "what did we decide about pricing?"
+- It's **accountable** — `ctx blame` shows where a preference came from.
+- It's **branchable** — different branches for different projects or
+  experiments.
+- It's **shared** — Claude Code, Cursor, a chat UI, and schedulers all read
+  and write the same graph over MCP.
 
-Multi-agent frameworks (CrewAI, AutoGen, LangGraph, OpenAI Swarm) lack shared state
-with provenance between agents.
+Start a fresh session, let it run a couple of recalls, and it has full project
+context in seconds — no re-explaining. See the
+[AI coding](/use-cases/ai-coding/) and
+[team](/use-cases/team-shared-context/) walkthroughs.
 
-When orchestrator A delegates to worker B:
-- B runs in isolation, returns text
-- No structured record of: what B explored, confidence, alternatives, authority chain
-- If B delegates to C, the chain is invisible
+## 2. Multi-agent orchestration state
 
-AgentStateGraph solves this natively:
-- Sessions with parent-child relationships
-- Scoped branches per agent
-- Authority chains and delegation
-- Intent decomposition trees
-- Resolution reporting
+Multi-agent frameworks lack shared state with provenance between agents. When an
+orchestrator delegates to a worker, the worker runs in isolation and returns
+text — with no structured record of what it explored, how confident it was, what
+alternatives it weighed, or who authorized what. If it delegates again, the
+chain is invisible.
 
-Integration play: `crewai-agentstategraph`, `langgraph-agentstategraph` plugins
-that put AgentStateGraph in front of each framework's user base.
+CTXone models this natively: sessions with parent/child relationships, scoped
+branches per agent, authority and delegation chains, and provenance on every
+write. The orchestration graph becomes inspectable instead of a pile of opaque
+tool calls.
 
-## 3. Shared Knowledge Base with Provenance (Accountable RAG)
+## 3. Accountable knowledge base (accountable RAG)
 
-Everyone has RAG. Nobody has accountable RAG where every fact carries:
-- Who added it (which agent, which human, which data source)
-- When, from what context, at what confidence
-- Whether superseded, corrected, or deprecated
-- Full blame chain when a fact is wrong
+Plenty of systems do retrieval. Few do **accountable** retrieval, where every
+fact carries:
 
-Example: Agent ingests earnings call → fact committed with `intent: Observe,
-confidence: 0.82, reasoning: "Extracted from Q3 transcript, page 14"`. Six months
-later, bad decision traced to wrong fact → blame shows exact ingestion session.
+- Who added it — which agent, which human, which source.
+- When, from what context, at what confidence.
+- Whether it's since been superseded, corrected, or deprecated.
+- A full blame chain when the fact turns out to be wrong.
 
-## 4. Configuration Management for AI Pipelines
+For example, an agent ingests an earnings call and commits a fact with
+`intent: Observe, confidence: 0.82, reason: "Q3 transcript, page 14"`. Months
+later, a bad decision is traced back to that fact — and `ctx blame` shows the
+exact ingestion session that produced it. Retrieval you can audit, not just
+retrieve.
 
-ML teams iterate on configs, hyperparameters, data preprocessing. Current tools
-(MLflow, W&B, YAML in Git) lack:
-- Branching to explore different config combinations
-- Intent metadata ("trying higher LR because loss plateaued")
-- Confidence scoring
-- Multi-agent support (one agent tunes hyperparams, another manages data)
+## 4. Configuration state for AI pipelines
 
-## 5. Compliance Logging for Any AI Decision
+ML teams iterate constantly on configs, hyperparameters, and preprocessing.
+Existing tools don't give them branching to explore config combinations, intent
+metadata ("trying a higher learning rate because loss plateaued"), confidence
+scoring, or multi-agent support where one agent tunes hyperparameters while
+another manages data. CTXone's branches and provenance fit this naturally —
+each experiment is a branch you can diff and merge.
 
-Beyond infrastructure — any consequential AI decision needs the same primitive:
-- Loan approval agents → "why denied? what alternatives?"
-- Medical triage agents → "what symptoms? what confidence?"
-- Content moderation agents → "why flagged? what policy?"
+## 5. Compliance logging for AI decisions
 
-Industry-agnostic. Sealed epochs work the same everywhere.
+Any consequential AI decision needs the same primitive: a durable, attributable
+record of what was decided and why. Loan-approval agents ("why denied? what
+alternatives?"), medical-triage agents ("what symptoms? what confidence?"),
+content-moderation agents ("why flagged? under what policy?") all benefit from
+provenance and gates that work the same way regardless of industry. This is the
+foundation of the [regulated-teams use case](/use-cases/regulated-teams/) and
+the Enterprise [audit bundles](/editions/#enterprise).
 
-## Ranking by Near-Term Leverage
+## The common thread
 
-| Use Case | Market Size | Build Effort | Demo-ability | Revenue Path |
-|---|---|---|---|---|
-| Agent memory | Massive (every AI user) | Low | Incredible | MCP marketplace, SaaS |
-| Agent orchestration | Large (framework users) | Medium | Good | Framework partnerships |
-| Infrastructure ops | Medium (DevOps/SRE) | Done | Great | Enterprise licenses |
-| Knowledge base | Large (enterprise) | Medium | Good | Enterprise licenses |
-| ML config | Medium (ML teams) | Low | Decent | Standard tier |
-| Compliance logging | Large (regulated) | Low | Great | Enterprise licenses |
+Every one of these is the same idea at a different altitude: **treat an agent's
+context with the rigor we already give source code** — history, review,
+attribution, and gates. Memory is the entry point; provenance, branches, and
+taint are what make the context trustworthy once it matters.
