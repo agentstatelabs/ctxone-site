@@ -28,16 +28,21 @@ const blog = defineCollection({
 });
 
 /**
- * `why` — the "Why CTXone" marketing section: LandingLayout-styled
- * copies of the docs/why-ctxone essays, surfaced from the top nav.
- * Each page canonicals to its docs original to avoid duplicate content.
+ * `why` — the "Why CTXone" marketing section. Single-sourced: it reads
+ * the SAME files as the docs why-ctxone pages, so there's one place to
+ * edit. The /why/* routes render them in LandingLayout and canonical to
+ * the docs originals. Schema mirrors the Starlight frontmatter we need
+ * (title, description, sidebar.order); other keys are ignored.
  */
 const why = defineCollection({
-	loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/why' }),
+	loader: glob({
+		pattern: '**/*.{md,mdx}',
+		base: './src/content/docs/why-ctxone',
+	}),
 	schema: z.object({
 		title: z.string(),
 		description: z.string().optional(),
-		order: z.number().default(99),
+		sidebar: z.object({ order: z.number() }).partial().optional(),
 	}),
 });
 

@@ -1,6 +1,6 @@
 ---
 title: "Token economics"
-description: "> **Calibration note.** The ratios on this page (60× per session, etc.) are > a theoretical ceiling derived from a specific model of \"flat memory > dumped in…"
+description: "The token math behind CTXone — how budgeted, targeted recall replaces flat-memory dumps, and why the savings ratio climbs as your graph grows."
 sidebar:
   order: 3
 ---

@@ -7,9 +7,10 @@
 import { getCollection } from 'astro:content';
 import LandingLayout from '../../layouts/LandingLayout.astro';
 
-const entries = (await getCollection('why')).sort(
-	(a, b) => a.data.order - b.data.order
-);
+// Exclude "Use cases" — it lives at /use-cases, not here.
+const entries = (await getCollection('why'))
+	.filter((e) => e.id !== 'use-cases')
+	.sort((a, b) => (a.data.sidebar?.order ?? 99) - (b.data.sidebar?.order ?? 99));
 
 const accents = ['blue', 'green', 'amber'] as const;
 ---
@@ -68,8 +69,9 @@ const accents = ['blue', 'green', 'amber'] as const;
 
 	.grid {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		grid-template-columns: repeat(2, 1fr);
 		gap: 1.25rem;
+		max-width: 46rem;
 	}
 
 	.card {
