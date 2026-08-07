@@ -56,6 +56,10 @@ export default defineConfig({
 							label: 'Memory branch scoping',
 							slug: 'how-it-works/memory-branch-scoping',
 						},
+						{
+							label: 'Agent structure',
+							slug: 'how-it-works/agent-structure',
+						},
 					],
 				},
 				{
@@ -100,6 +104,7 @@ export default defineConfig({
 						{ label: 'Context anxiety', slug: 'why-ctxone/context-anxiety' },
 						{ label: 'Token economics', slug: 'why-ctxone/token-economics' },
 						{ label: 'Use cases', slug: 'why-ctxone/use-cases' },
+						{ label: 'Cost savings', slug: 'why-ctxone/cost-savings' },
 					],
 				},
 			],
