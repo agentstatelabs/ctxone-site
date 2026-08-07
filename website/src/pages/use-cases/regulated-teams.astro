@@ -1,0 +1,155 @@
+---
+/**
+ * Use case page: regulated / auditable AI deployments.
+ *
+ * Audience: compliance-forward orgs deploying agents internally who
+ * need provenance and governance. Maps to the Enterprise edition.
+ */
+import LandingLayout from '../../layouts/LandingLayout.astro';
+---
+
+<LandingLayout
+	title="CTXone for regulated teams — auditable agent context"
+	description="Deploy AI agents in a regulated environment without losing the audit trail. CTXone gives every fact provenance, gates sensitive paths, and keeps context self-hosted where your data must live."
+>
+	<section class="section">
+		<div class="container narrow">
+			<div class="eyebrow">Use case</div>
+			<h1>Auditable agent context for regulated teams.</h1>
+
+			<p class="lede">
+				In a regulated environment, "the AI changed it" is not an
+				acceptable answer. Every decision that shapes your systems needs
+				an owner, a timestamp, and a reason a reviewer can inspect. Most
+				AI tooling gives you the opposite: context that lives in a
+				context window, evaporates at the end of a session, and leaves no
+				trace of who told the model what.
+			</p>
+
+			<p>
+				CTXone treats agent context the way you already treat code and
+				records — with provenance, gates, and residency. It's
+				self-hosted by design, so the data stays where your policy
+				requires it.
+			</p>
+
+			<h2>Provenance on every write</h2>
+			<p>
+				Writing to memory is a commit: agent ID, user, timestamp,
+				intent, and reason. <code>ctx blame</code> answers "who told the
+				model that?" and <code>ctx why-did-we</code> traces a decision's
+				full chain before anyone reverses it. On Enterprise, these become
+				exportable, tamper-evident audit bundles you can hand to a
+				reviewer.
+			</p>
+
+			<h2>Gates on sensitive paths</h2>
+			<p>
+				Not every path should be freely writable by an agent. CTXone's
+				taint system codifies that as policy: mark a path
+				<code>taint</code> to require review, <code>quarantine</code> to
+				block automated writes entirely, or <code>watch</code> to track
+				changes. A confidence check decides whether a given agent may
+				write at all.
+			</p>
+
+			<h2>Governed at org scale</h2>
+			<ul>
+				<li>
+					<strong>Multi-tenancy + RBAC.</strong> Isolate graphs by team
+					or business unit; control read, write, branch, and merge by
+					role.
+				</li>
+				<li>
+					<strong>SSO / SAML.</strong> Authenticate through your
+					existing identity provider — no separate accounts to
+					provision or offboard.
+				</li>
+				<li>
+					<strong>Data residency & compliance support.</strong> Deploy
+					where your data must live, with support for HIPAA-, SOC 2-,
+					and GDPR-aligned operating requirements.
+				</li>
+			</ul>
+
+			<h2>Who it's for</h2>
+			<p>
+				Organizations in compliance-forward industries — healthcare,
+				financial services, regulated public sector, large SaaS — putting
+				AI agents into real internal workflows, where governance and
+				auditability are a precondition, not an afterthought.
+			</p>
+
+			<p class="more">
+				Next:
+				<a href="/editions/#enterprise">CTXone Enterprise overview</a>
+				&nbsp;·&nbsp;
+				<a href="/blog/who-told-the-model-that/">
+					Provenance, explained
+				</a>
+				&nbsp;·&nbsp;
+				<a href="/use-cases/">All use cases</a>
+			</p>
+		</div>
+	</section>
+</LandingLayout>
+
+<style>
+	.narrow { max-width: 44rem; }
+
+	.eyebrow {
+		color: var(--ctx-accent);
+		font-family: var(--ctx-font-mono);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		margin-bottom: 0.75rem;
+	}
+
+	h1 {
+		font-size: clamp(1.8rem, 4vw, 2.75rem);
+		font-weight: 800;
+		color: #ffffff;
+		margin: 0 0 1.5rem 0;
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+	}
+
+	h2 {
+		font-size: 1.3rem;
+		color: #ffffff;
+		margin: 2.5rem 0 0.75rem 0;
+	}
+
+	p {
+		color: var(--ctx-text);
+		font-size: 1rem;
+		margin: 0 0 1rem 0;
+		line-height: 1.65;
+	}
+
+	.lede { color: var(--ctx-text-dim); font-size: 1.1rem; }
+
+	ul {
+		color: var(--ctx-text);
+		margin: 0 0 1rem 0;
+		padding-left: 1.25rem;
+		line-height: 1.65;
+	}
+
+	ul li { margin-bottom: 0.65rem; }
+
+	code {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		padding: 0.1rem 0.4rem;
+		border-radius: var(--ctx-radius-sm);
+		font-size: 0.9em;
+		color: var(--ctx-accent-text);
+		font-family: var(--ctx-font-mono);
+	}
+
+	.more { color: var(--ctx-text-dim); font-size: 0.9rem; margin-top: 2rem; }
+
+	strong { color: #ffffff; }
+</style>

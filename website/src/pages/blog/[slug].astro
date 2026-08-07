@@ -7,11 +7,15 @@
  * founder is ready to publish, flip `draft: false` in the
  * frontmatter.
  */
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
 import LandingLayout from '../../layouts/LandingLayout.astro';
+import { getListablePosts } from '../../lib/posts';
 
 export async function getStaticPaths() {
-	const posts = await getCollection('blog', ({ data }) => !data.draft);
+	// Every non-draft post gets a route, including future-dated ones.
+	// The body is gated client-side (below) so an unreleased post shows
+	// a "publishes on…" notice instead of its content until its date.
+	const posts = await getListablePosts();
 	return posts.map((post) => ({
 		params: { slug: post.id },
 		props: { post },
@@ -57,11 +61,43 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
 				}
 			</div>
 
-			<div class="post-body">
+			<div
+				class="not-yet"
+				id="not-yet"
+				data-pubdate={post.data.pubDate.toISOString()}
+				hidden
+			>
+				<p class="not-yet-title">This post isn't published yet.</p>
+				<p>
+					It goes live on
+					<time datetime={post.data.pubDate.toISOString()}>
+						{dateFormatter.format(post.data.pubDate)}
+					</time>. Check back then, or
+					<a href="/blog/">see what's already published →</a>
+				</p>
+			</div>
+
+			<div class="post-body" id="post-body">
 				<Content />
 			</div>
 		</div>
 	</article>
+
+	<script is:inline>
+		// Gate the body on the visitor's clock: if this post's pubDate
+		// hasn't arrived, hide the content and show the "publishes on…"
+		// notice instead. Lets a scheduled post's URL exist without
+		// exposing the piece before its date — no rebuild required.
+		(function () {
+			var body = document.getElementById('post-body');
+			var notice = document.getElementById('not-yet');
+			if (!body || !notice) return;
+			var d = Date.parse(notice.getAttribute('data-pubdate'));
+			var future = isFinite(d) && d > Date.now();
+			body.hidden = future;
+			notice.hidden = !future;
+		})();
+	</script>
 </LandingLayout>
 
 <style>
@@ -101,6 +137,29 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
 
 	.dot-sep {
 		margin: 0 0.5rem;
+	}
+
+	.not-yet {
+		border: 1px dashed var(--ctx-border-hi);
+		border-radius: var(--ctx-radius-lg);
+		background: var(--ctx-panel);
+		padding: 2rem 1.75rem;
+		color: var(--ctx-text-dim);
+	}
+
+	.not-yet-title {
+		color: #ffffff;
+		font-weight: 700;
+		margin: 0 0 0.5rem 0;
+	}
+
+	.not-yet p {
+		margin: 0 0 0.5rem 0;
+		line-height: 1.6;
+	}
+
+	.not-yet a {
+		color: var(--ctx-accent);
 	}
 
 	.post-body {

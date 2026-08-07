@@ -40,7 +40,7 @@ export default defineConfig({
 					label: 'Company',
 					items: [
 						{ label: 'Blog', link: '/blog/' },
-						{ label: 'Early access', link: '/early-access/' },
+						{ label: 'Team & Enterprise', link: '/editions/' },
 					],
 				},
 				{

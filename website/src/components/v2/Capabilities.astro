@@ -1,0 +1,190 @@
+---
+/**
+ * Comprehensive capabilities grid — six primitives. This is where the
+ * v2 page earns "more comprehensive": the old page stopped at
+ * remember/recall/blame. The product now spans plans, branches, taint,
+ * and token accounting too. Each card = one primitive + the verb you
+ * reach for.
+ */
+
+type Cap = {
+	label: string;
+	title: string;
+	body: string;
+	cmd: string;
+	accent: 'blue' | 'green' | 'amber';
+};
+
+const caps: Cap[] = [
+	{
+		label: 'MEMORY',
+		title: 'A graph, not a prompt dump',
+		body: 'Write a fact once; recall ranks by relevance inside a token budget. Pinned facts are always in; primed facts come in when they matter.',
+		cmd: 'ctx remember "SQLite, not Postgres" --importance high\nctx recall "database" --budget 1500',
+		accent: 'blue',
+	},
+	{
+		label: 'PLANS',
+		title: 'The cure for plan rot',
+		body: 'Plans are a first-class container of tasks that persist across sessions. Mark tasks done with proof (a commit SHA) so the plan stays anchored to reality.',
+		cmd: 'ctx plan new "auth refactor"\nctx plan next\nctx plan done 3 --proof commit:abc1234',
+		accent: 'green',
+	},
+	{
+		label: 'BRANCHES',
+		title: 'Memory branches like git',
+		body: 'Sandbox speculative context on its own branch, diff it against main, and merge it back when it holds up. Scope any command with --branch.',
+		cmd: 'ctx branch spike/redis\nctx diff main spike/redis\nctx merge spike/redis --into main',
+		accent: 'amber',
+	},
+	{
+		label: 'PROVENANCE',
+		title: 'Every fact has a paper trail',
+		body: 'Each commit carries an agent ID, timestamp, intent, and reason. Trace any decision before you reverse it — no more orphaned "who told the model that?"',
+		cmd: 'ctx blame /memory/legal/bsl\nctx why-did-we "use BSL-1.1"',
+		accent: 'blue',
+	},
+	{
+		label: 'TAINT',
+		title: 'Verification gates on writes',
+		body: 'Flag paths that need review (taint), block writes entirely (quarantine), or watch for changes. A confidence check decides whether an agent may write.',
+		cmd: 'ctx taint list --kind quarantine\nctx taint check /memory/prod/config',
+		accent: 'green',
+	},
+	{
+		label: 'ACCOUNTING',
+		title: 'Savings you can prove',
+		body: 'Every recall reports tokens sent vs the flat-memory baseline. Session metrics parse your Claude Code transcripts for real token, cost, and cache data.',
+		cmd: 'ctx stats\nctx session metrics --all',
+		accent: 'amber',
+	},
+];
+---
+
+<section class="section caps">
+	<div class="container">
+		<div class="eyebrow"><span class="eyebrow-text">CAPABILITIES //</span></div>
+		<h2 class="section-title">Six primitives, one graph.</h2>
+		<p class="section-lede">
+			It started as remember / recall / blame. It grew into everything an
+			agent needs to keep its head straight across a long project —
+			exposed identically to your tools (MCP) and to you (the
+			<code>ctx</code> CLI).
+		</p>
+
+		<div class="grid">
+			{caps.map((c) => (
+				<article class={`card a-${c.accent}`}>
+					<div class="label">{c.label}</div>
+					<h3>{c.title}</h3>
+					<p>{c.body}</p>
+					<pre><code>{c.cmd}</code></pre>
+				</article>
+			))}
+		</div>
+	</div>
+</section>
+
+<style>
+	.caps {
+		background:
+			radial-gradient(ellipse 70% 40% at 50% 100%, rgba(59, 130, 246, 0.04), transparent 60%),
+			var(--ctx-bg);
+	}
+
+	.eyebrow {
+		display: inline-block;
+		padding: 0.3rem 0.8rem;
+		background: rgba(34, 197, 94, 0.08);
+		border: 1px solid rgba(34, 197, 94, 0.28);
+		border-radius: 999px;
+		font-family: var(--ctx-font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.1em;
+		color: var(--ctx-success);
+		margin-bottom: 1rem;
+	}
+
+	.eyebrow-text { font-weight: 700; }
+
+	.section-lede code {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		padding: 0.1rem 0.35rem;
+		border-radius: var(--ctx-radius-sm);
+		font-size: 0.9em;
+		color: var(--ctx-accent-text);
+		font-family: var(--ctx-font-mono);
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.25rem;
+		margin-top: 0.5rem;
+	}
+
+	.card {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		border-radius: var(--ctx-radius-lg);
+		padding: 1.5rem;
+		position: relative;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.card::before {
+		content: '';
+		position: absolute;
+		top: 0; left: 0; right: 0;
+		height: 3px;
+	}
+
+	.a-blue::before  { background: var(--ctx-accent);  box-shadow: 0 0 12px rgba(59, 130, 246, 0.5); }
+	.a-green::before { background: var(--ctx-success); box-shadow: 0 0 12px rgba(34, 197, 94, 0.5); }
+	.a-amber::before { background: var(--ctx-warn);    box-shadow: 0 0 12px rgba(252, 211, 77, 0.5); }
+
+	.label {
+		font-family: var(--ctx-font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.12em;
+		margin-bottom: 0.5rem;
+	}
+
+	.a-blue .label  { color: var(--ctx-accent); }
+	.a-green .label { color: var(--ctx-success); }
+	.a-amber .label { color: var(--ctx-warn); }
+
+	.card h3 {
+		margin: 0 0 0.75rem 0;
+		font-size: 1.1rem;
+		color: #ffffff;
+	}
+
+	.card p {
+		color: var(--ctx-text-dim);
+		font-size: 0.88rem;
+		margin: 0 0 1rem 0;
+		line-height: 1.55;
+		flex: 1;
+	}
+
+	.card pre {
+		background: #050505;
+		border: 1px solid var(--ctx-border-lo);
+		border-radius: var(--ctx-radius-md);
+		padding: 0.85rem 1rem;
+		font-size: 0.73rem;
+		overflow-x: auto;
+		color: var(--ctx-text-code);
+		margin: 0;
+		line-height: 1.6;
+		white-space: pre;
+	}
+
+	@media (max-width: 900px) {
+		.grid { grid-template-columns: 1fr; }
+	}
+</style>

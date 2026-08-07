@@ -1,0 +1,174 @@
+---
+/**
+ * Use case page: a team sharing one context hub.
+ *
+ * Audience: an engineering team already using AI coding tools where
+ * every member's agent starts from zero. Maps to the Team edition.
+ */
+import LandingLayout from '../../layouts/LandingLayout.astro';
+---
+
+<LandingLayout
+	title="CTXone for teams — one shared context"
+	description="Stop letting every teammate's AI agent start from zero. One shared CTXone hub means a decision made once is known by everyone's tools — with provenance attributed to real people."
+>
+	<section class="section">
+		<div class="container narrow">
+			<div class="eyebrow">Use case</div>
+			<h1>A decision made once, known by everyone's agents.</h1>
+
+			<p class="lede">
+				You primed your Cursor install with the team's architectural
+				decisions. Priya didn't. Now her model is arguing for Redis on
+				the job queue — a question you settled three months ago in a
+				Slack thread she never saw. Every teammate's agent is
+				re-learning the same context, and disagreeing about it.
+			</p>
+
+			<p>
+				CTXone Team puts one shared Hub at the center of your toolchain.
+				Everyone's AI tools read and write the same memory graph, so
+				context is shared by default — not copied per laptop, not
+				re-primed per person, not trapped in one engineer's chat
+				history.
+			</p>
+
+			<h2>How it works</h2>
+
+			<pre><code class="language-bash"># One person stands up the shared hub (or run it as a service)
+ctx serve --http --auth-token $CTX_TOKEN
+
+# Everyone else points their tools at it
+ctx init --transport http --mcp-url https://ctx.internal:7000/mcp \
+    --auth-token-env CTX_TOKEN</code></pre>
+
+			<p>
+				From that point on, <code>ctx init</code> wires each person's
+				Claude Code, Cursor, VS Code, and the rest into the same hub.
+				What one engineer teaches CTXone, the whole team's agents
+				already know on the next turn.
+			</p>
+
+			<h2>What changes</h2>
+			<ul>
+				<li>
+					<strong>No more divergent context.</strong> A settled
+					decision lives in one graph everyone reads. Nobody's model
+					re-litigates a choice the team already made.
+				</li>
+				<li>
+					<strong>Provenance points to people.</strong> On a team hub,
+					<code>ctx blame</code> and <code>ctx why-did-we</code>
+					attribute each fact to the real user who wrote it — not an
+					anonymous agent.
+				</li>
+				<li>
+					<strong>Branch and merge context like code.</strong> Sandbox
+					a speculative direction on a branch, review the diff, and
+					merge it into the shared graph when the team agrees.
+				</li>
+				<li>
+					<strong>Plans everyone can see.</strong> Work-in-flight lives
+					on the hub, so "what's next" is a shared answer, not a
+					private checklist in someone's session.
+				</li>
+			</ul>
+
+			<h2>Who it's for</h2>
+			<p>
+				Teams already using AI coding tools daily who are tired of every
+				member's agent starting cold. If you've ever watched a teammate's
+				model undo a decision you made for good reasons, this is the fix.
+			</p>
+
+			<p class="more">
+				Next:
+				<a href="/editions/#team">CTXone Team overview</a>
+				&nbsp;·&nbsp;
+				<a href="/how-it-works/memory-branch-scoping/">
+					How branches work
+				</a>
+				&nbsp;·&nbsp;
+				<a href="/use-cases/">All use cases</a>
+			</p>
+		</div>
+	</section>
+</LandingLayout>
+
+<style>
+	.narrow { max-width: 44rem; }
+
+	.eyebrow {
+		color: var(--ctx-accent);
+		font-family: var(--ctx-font-mono);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		margin-bottom: 0.75rem;
+	}
+
+	h1 {
+		font-size: clamp(1.8rem, 4vw, 2.75rem);
+		font-weight: 800;
+		color: #ffffff;
+		margin: 0 0 1.5rem 0;
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+	}
+
+	h2 {
+		font-size: 1.3rem;
+		color: #ffffff;
+		margin: 2.5rem 0 0.75rem 0;
+	}
+
+	p {
+		color: var(--ctx-text);
+		font-size: 1rem;
+		margin: 0 0 1rem 0;
+		line-height: 1.65;
+	}
+
+	.lede { color: var(--ctx-text-dim); font-size: 1.1rem; }
+
+	ul {
+		color: var(--ctx-text);
+		margin: 0 0 1rem 0;
+		padding-left: 1.25rem;
+		line-height: 1.65;
+	}
+
+	ul li { margin-bottom: 0.65rem; }
+
+	code {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		padding: 0.1rem 0.4rem;
+		border-radius: var(--ctx-radius-sm);
+		font-size: 0.9em;
+		color: var(--ctx-accent-text);
+		font-family: var(--ctx-font-mono);
+	}
+
+	pre {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		border-radius: var(--ctx-radius-md);
+		padding: 1rem 1.25rem;
+		overflow-x: auto;
+		margin: 1.25rem 0;
+	}
+
+	pre code {
+		background: transparent;
+		border: none;
+		padding: 0;
+		color: var(--ctx-text-code);
+		font-size: 0.85rem;
+		line-height: 1.55;
+	}
+
+	.more { color: var(--ctx-text-dim); font-size: 0.9rem; margin-top: 2rem; }
+
+	strong { color: #ffffff; }
+</style>

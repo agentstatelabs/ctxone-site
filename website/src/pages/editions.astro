@@ -1,0 +1,357 @@
+---
+/**
+ * CTXone editions — Team & Enterprise product descriptions.
+ *
+ * Replaces the former Early Access Program page (retired). This is a
+ * product page, NOT a pricing page and NOT an application form: it
+ * describes what the Team and Enterprise editions are, what they add
+ * over the open core, and who each is for. Pricing is intentionally
+ * absent. A single contact CTA (mailto) is the only action.
+ */
+import LandingLayout from '../layouts/LandingLayout.astro';
+
+const contact = 'mailto:hello@agentstatelabs.com';
+---
+
+<LandingLayout
+	title="CTXone Team & Enterprise — editions"
+	description="CTXone Team gives your whole team one shared context hub. CTXone Enterprise adds multi-tenancy, SSO, RBAC, audit, and governance for org-wide agent deployments. Both build on the open-source core."
+>
+	<section class="section intro">
+		<div class="container narrow">
+			<div class="eyebrow">Editions</div>
+			<h1>The same engine. Built for one, a team, or the whole org.</h1>
+			<p class="lede">
+				CTXone's open core is complete and self-hosted — every MCP tool,
+				the full memory graph, plans, branches, taint, and provenance.
+				<strong>Team</strong> and <strong>Enterprise</strong> don't unlock
+				features; they run that same engine for many people, with the
+				identity, sharing, and governance that a group needs.
+			</p>
+			<div class="tier-jump">
+				<a href="#team">CTXone Team ↓</a>
+				<a href="#enterprise">CTXone Enterprise ↓</a>
+			</div>
+		</div>
+	</section>
+
+	<!-- TEAM -->
+	<section id="team" class="section tier tier-team">
+		<div class="container narrow">
+			<div class="tier-head">
+				<span class="tier-tag tag-team">TEAM</span>
+				<h2>One hub your whole team points at.</h2>
+			</div>
+			<p class="tier-lede">
+				Everyone runs against a single shared Hub, so context is shared by
+				default — not copied, primed, or re-explained per person. What one
+				engineer teaches CTXone, the whole team's agents already know.
+			</p>
+
+			<h3>What you get</h3>
+			<ul class="feat">
+				<li>
+					<strong>A shared team Hub.</strong> One daemon, one graph, every
+					tool and teammate connected to it by URL. No per-laptop database
+					drifting out of sync.
+				</li>
+				<li>
+					<strong>Per-user identity.</strong> Commits, blame, and
+					<code>why-did-we</code> attribute to real people — so a decision
+					traces back to who actually made it, not an anonymous agent.
+				</li>
+				<li>
+					<strong>Branch workflows across contributors.</strong> Sandbox
+					speculative context on a branch, review the diff, and merge it into
+					the shared graph the same way you'd merge code.
+				</li>
+				<li>
+					<strong>Shared plans.</strong> Plans live on the team hub and
+					survive across people and sessions, so work-in-flight is visible to
+					everyone instead of trapped in one person's chat history.
+				</li>
+				<li>
+					<strong>Priority support.</strong> A direct line for setup, upgrades,
+					and the occasional "why is recall ranking this?" question.
+				</li>
+			</ul>
+
+			<h3>Who it's for</h3>
+			<p>
+				Teams already using AI coding tools daily who are tired of each
+				member's agent starting from zero. If you've ever settled an
+				architectural decision in Slack only to watch a teammate's model
+				re-litigate it a month later, Team is the fix.
+			</p>
+		</div>
+	</section>
+
+	<!-- ENTERPRISE -->
+	<section id="enterprise" class="section tier tier-ent">
+		<div class="container narrow">
+			<div class="tier-head">
+				<span class="tier-tag tag-ent">ENTERPRISE</span>
+				<h2>Agent context, governed at org scale.</h2>
+			</div>
+			<p class="tier-lede">
+				Everything in Team, plus the multi-tenancy, access control, and
+				auditability required to run CTXone across many teams in a regulated
+				environment — without giving up the self-hosted, data-stays-put
+				posture of the open core.
+			</p>
+
+			<h3>What Enterprise adds</h3>
+			<ul class="feat">
+				<li>
+					<strong>Multi-tenancy.</strong> Isolate graphs by team, project, or
+					business unit within one deployment, with clear boundaries between
+					who can see and write what.
+				</li>
+				<li>
+					<strong>RBAC.</strong> Role-based access control over paths and
+					operations — read, write, branch, merge, administer — mapped to
+					your org's roles.
+				</li>
+				<li>
+					<strong>SSO / SAML.</strong> Authenticate through your existing
+					identity provider. No separate CTXone accounts to provision or
+					offboard.
+				</li>
+				<li>
+					<strong>Audit bundles.</strong> Exportable, tamper-evident records
+					of who wrote, changed, or removed context and when — provenance you
+					can hand to a compliance reviewer.
+				</li>
+				<li>
+					<strong>Policy governance.</strong> Codify verification gates
+					(taint / quarantine) as org policy, so sensitive paths require
+					review or are blocked from automated writes.
+				</li>
+				<li>
+					<strong>Data residency & compliance support.</strong> Deploy where
+					your data is required to live, with support for HIPAA, SOC 2, and
+					GDPR-aligned operating requirements.
+				</li>
+				<li>
+					<strong>Direct founder access & roadmap influence.</strong> A
+					working relationship with the people building CTXone, and real
+					input into what ships next.
+				</li>
+			</ul>
+
+			<h3>Who it's for</h3>
+			<p>
+				Organizations in compliance-forward industries — healthcare,
+				financial services, regulated public sector, large SaaS — deploying
+				AI agents internally at scale, who need governance and auditability
+				as a precondition, not an afterthought.
+			</p>
+		</div>
+	</section>
+
+	<section class="section contact">
+		<div class="container narrow">
+			<h2>Talk to us</h2>
+			<p>
+				Tell us what you're building and which edition fits. We'll walk you
+				through deployment, identity, and governance for your environment.
+			</p>
+			<div class="contact-actions">
+				<a class="btn btn-primary" href={`${contact}?subject=CTXone%20Team`}>
+					Contact us about Team →
+				</a>
+				<a class="btn btn-secondary" href={`${contact}?subject=CTXone%20Enterprise`}>
+					Contact us about Enterprise →
+				</a>
+			</div>
+			<p class="oss-note">
+				Just getting started or evaluating solo? The
+				<a href="/getting-started/quickstart/">open-source edition</a>
+				is the same engine — install it and run it today, no account.
+			</p>
+		</div>
+	</section>
+</LandingLayout>
+
+<style>
+	.narrow { max-width: 46rem; }
+
+	.eyebrow {
+		color: var(--ctx-accent);
+		font-family: var(--ctx-font-mono);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		margin-bottom: 0.75rem;
+	}
+
+	h1 {
+		font-size: clamp(1.9rem, 4vw, 2.85rem);
+		font-weight: 800;
+		color: #ffffff;
+		margin: 0 0 1.25rem 0;
+		line-height: 1.12;
+		letter-spacing: -0.02em;
+	}
+
+	.lede {
+		color: var(--ctx-text-dim);
+		font-size: 1.15rem;
+		line-height: 1.65;
+		margin: 0 0 1.5rem 0;
+	}
+
+	.lede strong { color: #ffffff; }
+
+	.tier-jump {
+		display: flex;
+		gap: 1rem;
+		flex-wrap: wrap;
+	}
+
+	.tier-jump a {
+		font-family: var(--ctx-font-mono);
+		font-size: 0.85rem;
+		padding: 0.5rem 0.9rem;
+		border: 1px solid var(--ctx-border-hi);
+		border-radius: var(--ctx-radius-md);
+		color: var(--ctx-text);
+	}
+
+	.tier-jump a:hover { text-decoration: none; border-color: var(--ctx-accent); }
+
+	.tier { position: relative; }
+
+	.tier::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: 3px;
+	}
+
+	.tier-team::before {
+		background: var(--ctx-accent);
+		box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+	}
+
+	.tier-ent::before {
+		background: var(--ctx-warn);
+		box-shadow: 0 0 12px rgba(252, 211, 77, 0.5);
+	}
+
+	.tier-head {
+		display: flex;
+		align-items: center;
+		gap: 0.85rem;
+		margin-bottom: 1rem;
+		flex-wrap: wrap;
+	}
+
+	.tier-tag {
+		font-family: var(--ctx-font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.1em;
+		padding: 0.25rem 0.65rem;
+		border-radius: 999px;
+	}
+
+	.tag-team {
+		background: rgba(59, 130, 246, 0.1);
+		border: 1px solid rgba(59, 130, 246, 0.4);
+		color: var(--ctx-accent-text);
+	}
+
+	.tag-ent {
+		background: rgba(252, 211, 77, 0.1);
+		border: 1px solid rgba(252, 211, 77, 0.4);
+		color: var(--ctx-warn);
+	}
+
+	h2 {
+		font-size: clamp(1.4rem, 3vw, 1.9rem);
+		color: #ffffff;
+		margin: 0;
+		letter-spacing: -0.01em;
+	}
+
+	h3 {
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--ctx-text-faint);
+		font-family: var(--ctx-font-mono);
+		margin: 2rem 0 1rem 0;
+	}
+
+	.tier-lede {
+		color: var(--ctx-text);
+		font-size: 1.05rem;
+		line-height: 1.65;
+		margin: 0;
+	}
+
+	.feat {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.feat li {
+		position: relative;
+		padding-left: 1.5rem;
+		color: var(--ctx-text-dim);
+		font-size: 0.98rem;
+		line-height: 1.6;
+		margin-bottom: 0.9rem;
+	}
+
+	.feat li::before {
+		content: '→';
+		position: absolute;
+		left: 0;
+		color: var(--ctx-text-faint);
+	}
+
+	.tier-team .feat li::before { color: var(--ctx-accent); }
+	.tier-ent .feat li::before { color: var(--ctx-warn); }
+
+	.feat strong { color: #ffffff; }
+
+	p {
+		color: var(--ctx-text);
+		font-size: 1rem;
+		line-height: 1.65;
+		margin: 0 0 1rem 0;
+	}
+
+	code {
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		padding: 0.1rem 0.4rem;
+		border-radius: var(--ctx-radius-sm);
+		font-size: 0.9em;
+		color: var(--ctx-accent-text);
+		font-family: var(--ctx-font-mono);
+	}
+
+	.contact {
+		background:
+			radial-gradient(ellipse 60% 60% at 50% 100%, rgba(59, 130, 246, 0.06), transparent 60%),
+			var(--ctx-bg);
+	}
+
+	.contact-actions {
+		display: flex;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+		margin: 1.5rem 0;
+	}
+
+	.oss-note {
+		color: var(--ctx-text-dim);
+		font-size: 0.9rem;
+		margin-top: 1rem;
+	}
+</style>

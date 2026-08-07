@@ -2,26 +2,34 @@
 /**
  * The landing page at ctxone.com/
  *
- * Composes the five main sections: hero, problem, feature grid,
- * savings showcase, integrations, final CTA.
+ * Reworked to position CTXone as the four-surface context engine
+ * (memory + plans + branches + taint + provenance), not just a memory
+ * layer. Sections: hero, four surfaces, six capabilities, the context
+ * -anxiety vignettes, savings showcase, integrations, editions, CTA.
  */
 import LandingLayout from '../layouts/LandingLayout.astro';
-import Hero from '../components/Hero.astro';
+import HeroV2 from '../components/v2/HeroV2.astro';
+import Surfaces from '../components/v2/Surfaces.astro';
+import Capabilities from '../components/v2/Capabilities.astro';
+import PairsWithASD from '../components/v2/PairsWithASD.astro';
 import ProblemSection from '../components/ProblemSection.astro';
-import FeatureGrid from '../components/FeatureGrid.astro';
 import SavingsShowcase from '../components/SavingsShowcase.astro';
 import IntegrationsRow from '../components/IntegrationsRow.astro';
+import Editions from '../components/v2/Editions.astro';
 import CallToAction from '../components/CallToAction.astro';
 ---
 
 <LandingLayout
-	title="CTXone — memory that survives the session"
-	description="Persistent, searchable, accountable memory for AI agents. Write a fact once — Claude, Cursor, and every other tool you use remembers it forever, across sessions, across branches, with full provenance."
+	title="CTXone — the context engine for AI agents"
+	description="A self-hosted context engine for AI agents: durable memory that survives sessions, plans that survive plan rot, git-style branches and blame, and provable token savings. MCP-native, zero telemetry."
 >
-	<Hero />
+	<HeroV2 />
+	<Surfaces />
+	<Capabilities />
+	<PairsWithASD />
 	<ProblemSection />
-	<FeatureGrid />
 	<SavingsShowcase />
 	<IntegrationsRow />
+	<Editions />
 	<CallToAction />
 </LandingLayout>
