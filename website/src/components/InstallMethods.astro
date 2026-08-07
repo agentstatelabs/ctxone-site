@@ -1,45 +1,60 @@
 ---
 /**
- * Multi-method installer with tabs: Shell, Homebrew, Agent.
+ * Installer block, three parts:
  *
- * - Shell    — the curl one-liner (macOS / Linux).
- * - Homebrew — the tap formula (macOS, recommended).
- * - Agent    — a paste-into-your-agent block that has your AI tool
- *              install and wire up CTXone for you (mirrors `ctx bootstrap`).
+ *   1. Featured "agent" call-out — the paste-into-your-agent path
+ *      (`ctx bootstrap`), highlighted as the fastest way in.
+ *   2. Platform installers as tabs — Homebrew, Shell, Windows.
+ *   3. A platform-support strip — macOS (Apple Silicon + Intel),
+ *      Linux, Windows.
  *
  * Self-contained: a tiny inline script handles tab switching and
- * clipboard copy — no framework. Each method carries its own copy text
- * via data-copy so multi-line blocks copy cleanly.
+ * clipboard copy — no framework.
  */
 
 type Method = {
 	id: string;
 	label: string;
 	hint?: string;
-	// The command shown in the box and put on the clipboard.
 	cmd: string;
-	// Optional one-line note rendered under the box.
-	caption?: string;
 };
 
-const shell = 'curl -sSL https://raw.githubusercontent.com/AgentStateLabs/CTXone/main/install.sh | sh';
-const brew = 'brew tap agentstatelabs/ctxone && brew install ctxone';
+const agentCmd = 'ctx bootstrap';
+const agentCaption =
+	'Prints a block you paste into whatever agent you’re already in — it installs and primes CTXone, and offers to set up AgentStateDeveloper too.';
 
 const methods: Method[] = [
-	{ id: 'shell', label: 'Shell', hint: 'macOS · Linux', cmd: shell },
-	{ id: 'brew', label: 'Homebrew', hint: 'recommended', cmd: brew },
-	{
-		id: 'agent',
-		label: 'Agent',
-		hint: 'paste into your AI tool',
-		cmd: 'ctx bootstrap',
-		caption:
-			'Prints a block you paste into whatever agent you’re already in — it installs and primes CTXone, and offers to set up AgentStateDeveloper too.',
-	},
+	{ id: 'brew', label: 'Homebrew', hint: 'macOS', cmd: 'brew tap agentstatelabs/ctxone && brew install ctxone' },
+	{ id: 'shell', label: 'Shell', hint: 'macOS · Linux', cmd: 'curl -sSL https://raw.githubusercontent.com/AgentStateLabs/CTXone/main/install.sh | sh' },
+	{ id: 'windows', label: 'Windows', hint: 'PowerShell', cmd: 'iwr https://raw.githubusercontent.com/AgentStateLabs/CTXone/main/install.ps1 | iex' },
 ];
+
+const platforms = ['macOS · Apple Silicon', 'macOS · Intel', 'Linux', 'Windows'];
 ---
 
 <div class="install-methods">
+	<!-- Featured: let your agent install it -->
+	<div class="agent-callout">
+		<div class="agent-head">
+			<span class="spark" aria-hidden="true">⚡</span>
+			<span class="agent-title">Let your agent install it</span>
+			<span class="agent-badge">fastest</span>
+		</div>
+		<div class="cmd" data-copy={agentCmd}>
+			<code class="cmd-text">
+				<span class="prompt">$</span>
+				<span class="text">{agentCmd}</span>
+			</code>
+			<button type="button" class="copy-btn" aria-label="Copy agent install command">
+				<span class="copy-label">Copy</span>
+			</button>
+		</div>
+		<p class="cmd-note">{agentCaption}</p>
+	</div>
+
+	<div class="or">or install directly</div>
+
+	<!-- Platform installers -->
 	<div class="tabs" role="tablist" aria-label="Install method">
 		{methods.map((m, i) => (
 			<button
@@ -66,9 +81,14 @@ const methods: Method[] = [
 					<span class="copy-label">Copy</span>
 				</button>
 			</div>
-			{m.caption && <p class="cmd-note">{m.caption}</p>}
 		</div>
 	))}
+
+	<!-- Platform support strip -->
+	<div class="platforms" aria-label="Supported platforms">
+		<span class="platforms-label">Runs on</span>
+		{platforms.map((p) => <span class="platform">{p}</span>)}
+	</div>
 </div>
 
 <script>
@@ -121,6 +141,68 @@ const methods: Method[] = [
 		max-width: 40rem;
 	}
 
+	/* --- Featured agent call-out --- */
+	.agent-callout {
+		background:
+			radial-gradient(ellipse 80% 120% at 0% 0%, rgba(59, 130, 246, 0.1), transparent 60%),
+			var(--ctx-panel);
+		border: 1px solid var(--ctx-accent);
+		border-radius: var(--ctx-radius-lg);
+		padding: 1rem 1.1rem 1.1rem;
+		box-shadow: 0 0 24px rgba(59, 130, 246, 0.08);
+	}
+
+	.agent-head {
+		display: flex;
+		align-items: center;
+		gap: 0.55rem;
+		margin-bottom: 0.7rem;
+	}
+
+	.spark {
+		font-size: 0.95rem;
+		filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.6));
+	}
+
+	.agent-title {
+		color: #ffffff;
+		font-weight: 700;
+		font-size: 0.98rem;
+	}
+
+	.agent-badge {
+		font-family: var(--ctx-font-mono);
+		font-size: 0.6rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--ctx-accent-text);
+		background: rgba(59, 130, 246, 0.14);
+		border: 1px solid rgba(59, 130, 246, 0.4);
+		border-radius: 999px;
+		padding: 0.15rem 0.5rem;
+	}
+
+	.or {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin: 1.1rem 0 0.9rem;
+		color: var(--ctx-text-faint);
+		font-family: var(--ctx-font-mono);
+		font-size: 0.7rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.or::before,
+	.or::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: var(--ctx-border);
+	}
+
+	/* --- Platform tabs --- */
 	.tabs {
 		display: flex;
 		gap: 0.35rem;
@@ -166,14 +248,19 @@ const methods: Method[] = [
 		color: var(--ctx-accent-text);
 	}
 
+	/* --- Command box (shared) --- */
 	.cmd {
 		display: flex;
 		align-items: stretch;
-		background: var(--ctx-panel);
+		background: var(--ctx-bg);
 		border: 1px solid var(--ctx-border-hi);
 		border-radius: var(--ctx-radius-md);
 		overflow: hidden;
 		font-family: var(--ctx-font-mono);
+	}
+
+	.agent-callout .cmd {
+		background: var(--ctx-bg);
 	}
 
 	.cmd-text {
@@ -187,13 +274,7 @@ const methods: Method[] = [
 		overflow-x: auto;
 		font-family: inherit;
 		line-height: 1.5;
-	}
-
-	.cmd-note {
-		margin: 0.55rem 0 0 0;
-		font-size: 0.8rem;
-		line-height: 1.5;
-		color: var(--ctx-text-dim);
+		white-space: nowrap;
 	}
 
 	.prompt {
@@ -229,5 +310,42 @@ const methods: Method[] = [
 
 	.copy-btn.copied {
 		color: var(--ctx-success);
+	}
+
+	.cmd-note {
+		margin: 0.55rem 0 0 0;
+		font-size: 0.8rem;
+		line-height: 1.5;
+		color: var(--ctx-text-dim);
+	}
+
+	/* --- Platform support strip --- */
+	.platforms {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		margin-top: 1rem;
+	}
+
+	.platforms-label {
+		font-size: 0.72rem;
+		color: var(--ctx-text-faint);
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		font-family: var(--ctx-font-mono);
+		margin-right: 0.15rem;
+	}
+
+	.platform {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.25rem 0.6rem;
+		background: rgba(17, 17, 17, 0.6);
+		border: 1px solid var(--ctx-border);
+		border-radius: 999px;
+		font-size: 0.7rem;
+		color: var(--ctx-text-dim);
+		font-family: var(--ctx-font-mono);
 	}
 </style>
