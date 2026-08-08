@@ -11,6 +11,7 @@
  */
 import { getCollection, render } from 'astro:content';
 import LandingLayout from '../../layouts/LandingLayout.astro';
+import { accentFor } from '../../lib/why-accents';
 
 export async function getStaticPaths() {
 	const entries = (await getCollection('why')).filter(
@@ -25,6 +26,7 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await render(entry);
 
+const accent = accentFor(entry.id);
 const canonical = new URL(`/why-ctxone/${entry.id}/`, Astro.site).href;
 ---
 
@@ -33,7 +35,7 @@ const canonical = new URL(`/why-ctxone/${entry.id}/`, Astro.site).href;
 	description={entry.data.description}
 	canonical={canonical}
 >
-	<section class="hero">
+	<section class={`hero a-${accent}`}>
 		<div class="container">
 			<div class="eyebrow">
 				<span class="dot"></span>
@@ -67,11 +69,16 @@ const canonical = new URL(`/why-ctxone/${entry.id}/`, Astro.site).href;
 		padding: 0 1.5rem;
 	}
 
+	/* Accent theming — set per topic so the page matches its index card. */
+	.a-blue  { --a: var(--ctx-accent);  --a-rgb: 59, 130, 246; --a-text: var(--ctx-accent-text); }
+	.a-green { --a: var(--ctx-success); --a-rgb: 34, 197, 94;  --a-text: #86efac; }
+	.a-amber { --a: var(--ctx-warn);    --a-rgb: 252, 211, 77; --a-text: var(--ctx-warn); }
+
 	.hero {
 		padding: 4.5rem 0 2rem 0;
 		background:
-			radial-gradient(ellipse 70% 90% at 20% 0%, rgba(59, 130, 246, 0.14), transparent 60%),
-			radial-gradient(ellipse 60% 70% at 90% 0%, rgba(34, 197, 94, 0.06), transparent 55%),
+			radial-gradient(ellipse 70% 90% at 20% 0%, rgba(var(--a-rgb), 0.14), transparent 60%),
+			radial-gradient(ellipse 60% 70% at 90% 0%, rgba(var(--a-rgb), 0.05), transparent 55%),
 			var(--ctx-bg);
 	}
 
@@ -80,13 +87,13 @@ const canonical = new URL(`/why-ctxone/${entry.id}/`, Astro.site).href;
 		align-items: center;
 		gap: 0.5rem;
 		padding: 0.3rem 0.8rem;
-		background: rgba(59, 130, 246, 0.08);
-		border: 1px solid rgba(59, 130, 246, 0.28);
+		background: rgba(var(--a-rgb), 0.08);
+		border: 1px solid rgba(var(--a-rgb), 0.28);
 		border-radius: 999px;
 		font-family: var(--ctx-font-mono);
 		font-size: 0.68rem;
 		letter-spacing: 0.12em;
-		color: var(--ctx-accent-text);
+		color: var(--a-text);
 		margin-bottom: 1.25rem;
 		font-weight: 700;
 	}
@@ -95,8 +102,8 @@ const canonical = new URL(`/why-ctxone/${entry.id}/`, Astro.site).href;
 		width: 7px;
 		height: 7px;
 		border-radius: 50%;
-		background: var(--ctx-accent);
-		box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+		background: var(--a);
+		box-shadow: 0 0 10px rgba(var(--a-rgb), 0.8);
 	}
 
 	h1 {

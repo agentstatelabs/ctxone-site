@@ -5,13 +5,15 @@
  * The nav "Use cases" link points here.
  */
 import LandingLayout from '../../layouts/LandingLayout.astro';
+import { useCaseAccent } from '../../lib/use-case-accents';
+
+const slugOf = (href: string) => href.split('/').filter(Boolean).pop() ?? '';
 
 type UseCase = {
 	name: string;
 	href: string;
 	audience: string;
 	blurb: string;
-	accent: 'blue' | 'green' | 'amber';
 };
 
 const cases: UseCase[] = [
@@ -20,42 +22,36 @@ const cases: UseCase[] = [
 		href: '/use-cases/ai-coding/',
 		audience: 'Solo developers',
 		blurb: 'Stop re-explaining your project to Claude every morning. Write a fact once; every AI coding tool remembers it forever.',
-		accent: 'blue',
 	},
 	{
 		name: 'Team shared context',
 		href: '/use-cases/team-shared-context/',
 		audience: 'Engineering teams',
 		blurb: 'One shared hub so a decision made once is known by everyone’s agents — with provenance attributed to real people.',
-		accent: 'green',
 	},
 	{
 		name: 'Large codebases',
 		href: '/use-cases/large-codebase/',
 		audience: 'Big / legacy repos',
 		blurb: 'Pair CTXone memory with AgentStateDeveloper code intelligence so agents know structure and history, not just files.',
-		accent: 'amber',
 	},
 	{
 		name: 'Long-running projects',
 		href: '/use-cases/long-running-projects/',
 		audience: 'Multi-week efforts',
 		blurb: 'Beat plan rot: first-class plans that survive sessions and mark tasks done with proof, so a month-long effort never loses the thread.',
-		accent: 'amber',
 	},
 	{
 		name: 'Regulated teams',
 		href: '/use-cases/regulated-teams/',
 		audience: 'Compliance-forward orgs',
 		blurb: 'Auditable agent context: provenance on every write, gates on sensitive paths, self-hosted where your data must live.',
-		accent: 'blue',
 	},
 	{
 		name: 'Self-hosted chat',
 		href: '/use-cases/self-hosted-chat/',
 		audience: 'Open WebUI & friends',
 		blurb: 'Real memory for self-hosted chat — auto-inject relevant facts on every turn, no tool-calling required.',
-		accent: 'green',
 	},
 ];
 ---
@@ -75,7 +71,7 @@ const cases: UseCase[] = [
 
 			<div class="grid">
 				{cases.map((c) => (
-					<a class={`card a-${c.accent}`} href={c.href}>
+					<a class={`card a-${useCaseAccent(slugOf(c.href))}`} href={c.href}>
 						<div class="audience">{c.audience}</div>
 						<h2>{c.name}</h2>
 						<p>{c.blurb}</p>

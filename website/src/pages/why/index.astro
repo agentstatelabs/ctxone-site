@@ -6,13 +6,12 @@
  */
 import { getCollection } from 'astro:content';
 import LandingLayout from '../../layouts/LandingLayout.astro';
+import { accentFor } from '../../lib/why-accents';
 
 // Exclude "Use cases" — it lives at /use-cases, not here.
 const entries = (await getCollection('why'))
 	.filter((e) => e.id !== 'use-cases')
 	.sort((a, b) => (a.data.sidebar?.order ?? 99) - (b.data.sidebar?.order ?? 99));
-
-const accents = ['blue', 'green', 'amber'] as const;
 ---
 
 <LandingLayout
@@ -29,8 +28,8 @@ const accents = ['blue', 'green', 'amber'] as const;
 			</p>
 
 			<div class="grid">
-				{entries.map((e, i) => (
-					<a class={`card a-${accents[i % accents.length]}`} href={`/why/${e.id}/`}>
+				{entries.map((e) => (
+					<a class={`card a-${accentFor(e.id)}`} href={`/why/${e.id}/`}>
 						<h2>{e.data.title}</h2>
 						<p>{e.data.description}</p>
 						<span class="arrow">Read →</span>
