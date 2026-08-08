@@ -12,7 +12,7 @@ import LandingLayout from '../../layouts/LandingLayout.astro';
 	title="CTXone for large codebases — with AgentStateDeveloper"
 	description="On a big or legacy codebase, agents re-read the same files every session and edit blind to blast radius. CTXone memory plus AgentStateDeveloper code intelligence gives them structure and history together."
 >
-	<section class="section">
+	<section class="section hero-gradient a-amber">
 		<div class="container narrow">
 			<div class="eyebrow">Use case</div>
 			<h1>Navigate a large codebase without re-reading it every session.</h1>
@@ -109,13 +109,6 @@ ctx serve --http --asd-repo .
 </LandingLayout>
 
 <style>
-	.section {
-		background:
-			radial-gradient(1100px 460px at 12% -140px, rgba(252, 211, 77, 0.12), transparent 70%),
-			radial-gradient(820px 360px at 96% -120px, rgba(252, 211, 77, 0.05), transparent 70%),
-			var(--ctx-bg);
-	}
-
 	.narrow { max-width: 44rem; }
 
 	.eyebrow {

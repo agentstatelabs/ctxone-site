@@ -155,3 +155,43 @@
 		font-size: 1.25rem;
 	}
 }
+
+/* ------------------------------------------------------------------ *
+ * Shared hero gradient
+ *
+ * One canonical top gradient for every page's hero, so they read as a
+ * single system. Color is the only variable: set --ha (primary) and
+ * --hb (secondary) to comma-separated RGB triplets. Defaults to brand
+ * blue. The `.a-blue/.a-green/.a-amber` helpers set both to one accent;
+ * pages that want a two-tone hero (e.g. editions) set --ha/--hb inline.
+ * ------------------------------------------------------------------ */
+.landing .hero-gradient {
+	background:
+		radial-gradient(
+			1100px 480px at 12% -140px,
+			rgba(var(--ha, 59, 130, 246), 0.13),
+			transparent 70%
+		),
+		radial-gradient(
+			860px 400px at 92% -120px,
+			rgba(var(--hb, 59, 130, 246), 0.06),
+			transparent 70%
+		),
+		var(--ctx-bg);
+}
+
+.landing .hero-gradient.a-blue,
+.landing .a-blue {
+	--ha: 59, 130, 246;
+	--hb: 59, 130, 246;
+}
+.landing .hero-gradient.a-green,
+.landing .a-green {
+	--ha: 34, 197, 94;
+	--hb: 34, 197, 94;
+}
+.landing .hero-gradient.a-amber,
+.landing .a-amber {
+	--ha: 252, 211, 77;
+	--hb: 252, 211, 77;
+}

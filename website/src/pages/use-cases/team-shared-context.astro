@@ -12,7 +12,7 @@ import LandingLayout from '../../layouts/LandingLayout.astro';
 	title="CTXone for teams — one shared context"
 	description="Stop letting every teammate's AI agent start from zero. One shared CTXone hub means a decision made once is known by everyone's tools — with provenance attributed to real people."
 >
-	<section class="section">
+	<section class="section hero-gradient a-green">
 		<div class="container narrow">
 			<div class="eyebrow">Use case</div>
 			<h1>A decision made once, known by everyone's agents.</h1>
@@ -96,13 +96,6 @@ ctx init --transport http --mcp-url https://ctx.internal:7000/mcp \
 </LandingLayout>
 
 <style>
-	.section {
-		background:
-			radial-gradient(1100px 460px at 12% -140px, rgba(34, 197, 94, 0.13), transparent 70%),
-			radial-gradient(820px 360px at 96% -120px, rgba(34, 197, 94, 0.05), transparent 70%),
-			var(--ctx-bg);
-	}
-
 	.narrow { max-width: 44rem; }
 
 	.eyebrow {
