@@ -1,13 +1,13 @@
 ---
 title: "MCP tools"
-description: "The CTXone Hub exposes **65 MCP tools** over the stdio transport, organized into ten groups."
+description: "The CTXone Hub exposes 90+ MCP tools over the stdio transport. The core tools are grouped here; call the help tool for the complete, current list."
 sidebar:
   order: 2
 ---
-The CTXone Hub exposes **65 MCP tools** over the stdio transport, in ten
-groups. The full list is below; it always matches the running binary — call
-the `help` tool (or `ctx help`) for per-tool syntax, examples, and gotchas on
-demand.
+The CTXone Hub exposes **90+ MCP tools** over the stdio transport. The core
+tools are grouped below; the running binary is the source of truth — call the
+`help` tool (or `ctx help`) for the complete, current list plus per-tool
+syntax, examples, and gotchas on demand.
 
 - **Memory & recall** (8): `remember`, `recall`, `prime`, `context`,
   `forget`, `get`, `ls`, `search`

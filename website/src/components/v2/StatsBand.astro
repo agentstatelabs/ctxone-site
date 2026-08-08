@@ -1,0 +1,93 @@
+---
+/**
+ * "By the numbers" band — a compact stat strip under the hero, styled
+ * after the AgentStateGraph stats section. Four figures that reinforce
+ * concepts elaborated later on the page (surfaces, primitives) plus the
+ * MCP surface and storage options.
+ *
+ * MCP-tool count is `90+` site-wide (hero badge, surfaces, editions,
+ * reference docs), reflecting the running Hub's tool surface.
+ */
+
+type Stat = { value: string; label: string };
+
+const stats: Stat[] = [
+	{ value: '90+', label: 'MCP tools' },
+	{ value: '6', label: 'Primitives' },
+	{ value: '4', label: 'Surfaces' },
+	{ value: '3', label: 'Storage backends' },
+];
+---
+
+<section class="stats-section">
+	<div class="container">
+		<div class="stats" role="list">
+			{stats.map((s) => (
+				<div class="stat" role="listitem">
+					<div class="value">{s.value}</div>
+					<div class="label">{s.label}</div>
+				</div>
+			))}
+		</div>
+	</div>
+</section>
+
+<style>
+	.stats-section {
+		padding: 2.5rem 0;
+		background: var(--ctx-bg);
+		border-bottom: 1px solid var(--ctx-border-lo);
+	}
+
+	.stats {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		background: var(--ctx-panel);
+		border: 1px solid var(--ctx-border);
+		border-radius: var(--ctx-radius-lg);
+		overflow: hidden;
+	}
+
+	.stat {
+		text-align: center;
+		padding: 1.75rem 1rem;
+		border-left: 1px solid var(--ctx-border);
+	}
+
+	.stat:first-child {
+		border-left: none;
+	}
+
+	.value {
+		font-family: var(--ctx-font-mono);
+		font-size: clamp(1.9rem, 4vw, 2.6rem);
+		font-weight: 800;
+		line-height: 1;
+		color: var(--ctx-accent-text);
+		text-shadow: 0 0 24px rgba(59, 130, 246, 0.35);
+		letter-spacing: -0.02em;
+	}
+
+	.label {
+		margin-top: 0.6rem;
+		font-family: var(--ctx-font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--ctx-text-dim);
+	}
+
+	/* 2×2 on narrow screens; keep interior dividers sensible. */
+	@media (max-width: 640px) {
+		.stats {
+			grid-template-columns: repeat(2, 1fr);
+		}
+		.stat:nth-child(3) {
+			border-left: none;
+		}
+		.stat:nth-child(3),
+		.stat:nth-child(4) {
+			border-top: 1px solid var(--ctx-border);
+		}
+	}
+</style>
