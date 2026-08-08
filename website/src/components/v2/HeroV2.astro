@@ -9,8 +9,9 @@
 import InstallMethods from '../InstallMethods.astro';
 ---
 
-<section class="hero hero-gradient" style="--ha: 59, 130, 246; --hb: 34, 197, 94">
+<section class="hero">
 	<div class="scanlines" aria-hidden="true"></div>
+	<div class="aurora" aria-hidden="true"></div>
 	<div class="container">
 		<div class="eyebrow">
 			<span class="dot"></span>
@@ -63,6 +64,47 @@ import InstallMethods from '../InstallMethods.astro';
 		padding: 6rem 0 4.5rem 0;
 		border-bottom: 1px solid var(--ctx-border-lo);
 		overflow: hidden;
+		/* Landing-only rich treatment: a layered mesh of brand blooms
+		 * over a deep radial vignette — distinct from the shared
+		 * .hero-gradient the rest of the site uses. */
+		background:
+			radial-gradient(140% 100% at 50% -35%, rgba(59, 130, 246, 0.22), transparent 55%),
+			radial-gradient(55% 75% at 6% -12%, rgba(34, 197, 94, 0.16), transparent 55%),
+			radial-gradient(48% 62% at 96% -6%, rgba(252, 211, 77, 0.1), transparent 55%),
+			radial-gradient(85% 65% at 50% 118%, rgba(59, 130, 246, 0.12), transparent 60%),
+			var(--ctx-bg);
+	}
+
+	/* Slow-drifting aurora bloom for a bit of life. Respects
+	 * prefers-reduced-motion. */
+	.aurora {
+		position: absolute;
+		inset: -30% -10% auto -10%;
+		height: 130%;
+		pointer-events: none;
+		z-index: 0;
+		background:
+			radial-gradient(38% 55% at 22% 30%, rgba(34, 197, 94, 0.14), transparent 60%),
+			radial-gradient(42% 60% at 78% 20%, rgba(59, 130, 246, 0.18), transparent 60%),
+			radial-gradient(30% 45% at 60% 55%, rgba(252, 211, 77, 0.08), transparent 60%);
+		filter: blur(28px);
+		opacity: 0.9;
+		animation: aurora-drift 22s ease-in-out infinite alternate;
+	}
+
+	@keyframes aurora-drift {
+		0% {
+			transform: translate3d(-3%, -2%, 0) scale(1.05);
+		}
+		100% {
+			transform: translate3d(4%, 3%, 0) scale(1.12);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.aurora {
+			animation: none;
+		}
 	}
 
 	.scanlines {
