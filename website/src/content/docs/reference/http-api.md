@@ -215,6 +215,84 @@ running totals alongside the results:
 The field is only present for sessions that have reported usage —
 sessions that haven't see the same shape they've always seen.
 
+### `POST /api/stats/backfill_by_model`
+
+Recompute each session's per-model token split from its stored
+per-turn snapshots, and **replace** the stored split with the result.
+Every turn at `/sessions/{id}/turns/{idx}` already carries its own
+`model` and `tokens`, so this recomputes the per-model breakdown
+without re-ingesting (no double-counting) and without touching the
+graph (no memory loss). It is **idempotent** — running it again yields
+the same replacement. Scoped to the request namespace
+(`X-CTXone-Namespace`).
+
+Use it after importing sessions recorded before the per-model split
+existed, or any time a session's per-model numbers look wrong.
+
+**Two modes:**
+
+- **One session** — pass `?session=<id>` to recompute just that session.
+  This is what `ctx ingest-session` calls after writing a session's
+  turns, so a re-ingest never inflates the split. Always fast.
+- **Whole namespace** — omit `session` to walk every session. The walk
+  is **bounded per request** so it can never exceed the HTTP timeout,
+  no matter how large the namespace's database is.
+
+**Query parameters (whole-namespace mode):**
+
+- `max_secs` — soft wall-clock budget in seconds, default `20`. The
+  walk stops once the budget elapses (after finishing the in-flight
+  session) and returns a cursor. `0` is treated as `1`, and at least
+  one session is always processed so a spent budget can't stall.
+- `limit` — optional hard cap on how many sessions this request
+  processes, applied on top of the time budget.
+- `offset` — resume cursor: skip this many sessions (in sorted order)
+  before processing. Pass back the `next_offset` from the previous
+  response.
+
+**Response (200):**
+```json
+{
+  "status": "ok",
+  "namespace": "default",
+  "sessions_updated": 25,
+  "turns_scanned": 4820,
+  "models": ["claude-opus-4-8", "gpt-5.2-codex"],
+  "total": 60,
+  "processed": 25,
+  "next_offset": 25,
+  "done": false
+}
+```
+
+- `total` — sessions in the namespace
+- `processed` — sessions handled this request
+- `sessions_updated` — of those, how many had turns to recompute from
+  (a session with no stored turns is left untouched)
+- `next_offset` — where to resume, or `null` when finished
+- `done` — `true` once every session has been processed
+
+**Draining a large namespace.** Loop, passing back the cursor, until
+`done` is `true`:
+
+```bash
+offset=0
+while :; do
+  resp=$(curl -s -X POST \
+    "http://localhost:3001/api/stats/backfill_by_model?offset=$offset" \
+    -H "X-CTXone-Namespace: default")
+  echo "$resp"
+  [ "$(echo "$resp" | jq -r .done)" = "true" ] && break
+  offset=$(echo "$resp" | jq -r .next_offset)
+done
+```
+
+> **Turn-less sessions.** Backfill only *replaces* a session's split
+> when it finds stored turns to recompute from — a session with none is
+> left as-is. If such a session's stored numbers are wrong, backfill
+> cannot fix them; delete the session
+> (`DELETE /api/sessions/{sid}`) instead.
+
 ### `GET /api/stats/{ref_name}`
 
 Structural stats for a branch.
