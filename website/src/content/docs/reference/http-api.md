@@ -315,6 +315,56 @@ Structural stats for a branch.
 }
 ```
 
+### `GET /api/namespaces/summary`
+
+A hub-global rollup with one entry per workspace (namespace) — the data
+behind the Hub Home overview. One call returns token and graph
+aggregates for every workspace, so the dashboard needs no per-workspace
+fan-out. Short-TTL cached (~15s) since it walks every namespace.
+
+**Response (200):**
+```json
+{
+  "workspaces": [
+    {
+      "namespace": "default",
+      "session_count": 153,
+      "representative_model": "gpt-5.2",
+      "tokens": {
+        "used": 1700,
+        "saved": 5200,
+        "llm_input": 5100000000,
+        "llm_output": 27100000,
+        "llm_cache_read": 7500000000,
+        "llm_cache_create": 69500000,
+        "by_model": {
+          "claude-opus-4-8": { "input_tokens": 126025, "output_tokens": 1781988, "cache_read_tokens": 754047192, "cache_create_tokens": 36456103, "call_count": 214 },
+          "gpt-5.4": { "input_tokens": 2497100792, "output_tokens": 6201704, "cache_read_tokens": 2373367552, "cache_create_tokens": 0, "call_count": 1412 }
+        }
+      },
+      "graph": { "commit_count": 10000, "path_count": 10000, "branch_count": 41, "epoch_count": 0 }
+    }
+  ]
+}
+```
+
+- `representative_model` — the workspace's most-common `last_model`,
+  used only as a **label**.
+- `tokens.llm_*` — the four token classes summed across the workspace's
+  sessions.
+- `tokens.by_model` — the same totals **split per model** (each entry is
+  a `ModelUsage`, as in `GET /api/stats/sessions`).
+
+**Cost is priced per model.** The Hub Home cost tile sums each model's
+tokens at that model's own rate (input + output + cache-read +
+cache-write), then adds the per-model costs — the same basis as the
+workspace LLM-usage panel. Pricing the whole workspace at a single
+representative model would mis-price a mixed-model workspace: one that is
+mostly Opus but whose most-common model is a cheaper model would read far
+too low. `by_model` is what makes the accurate, per-model figure
+possible; `representative_model` is kept only for the label. (Older hubs
+that predate `by_model` fall back to the single-model estimate.)
+
 ---
 
 ## Read endpoints (state)
