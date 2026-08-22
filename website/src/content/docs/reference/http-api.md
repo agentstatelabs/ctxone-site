@@ -155,15 +155,30 @@ every other endpoint). Unknown sessions are auto-created.
 }
 ```
 
-- `input_tokens` (required) — tokens the model consumed as input
+- `input_tokens` (required) — **fresh** input tokens the model consumed,
+  NOT counting anything served from cache. Report input disjoint from
+  `cache_read_tokens` (see the note below).
 - `output_tokens` (required) — tokens the model generated
-- `cache_read_tokens` — tokens served from the prompt cache (Anthropic), default `0`
-- `cache_create_tokens` — tokens written to the prompt cache (Anthropic), default `0`
+- `cache_read_tokens` — tokens served from the prompt cache, default `0`
+- `cache_create_tokens` — tokens written to the prompt cache (Anthropic
+  prompt caching), default `0`
 - `model` — human-readable model identifier for display, optional
 - `provider` — provider identifier (`anthropic`, `openai`, `gemini`, …), optional
 
 All token fields are `u64`; negative or malformed values are rejected
 by the JSON parser.
+
+> **Cached tokens must not be double-counted.** CTXone treats the four
+> fields as **disjoint** — the total for a call is
+> `input + output + cache_read + cache_create`. Anthropic already reports
+> input this way (its `input_tokens` excludes cache reads). **OpenAI /
+> Codex do not**: their `input_tokens` *includes* the cached portion
+> (`cached_input_tokens` is a subset), so a raw copy would count the
+> cached tokens in both `input` and `cache_read`. Subtract the cached
+> count from input before reporting: `input = input_tokens −
+> cached_input_tokens`. Getting this wrong inflates the token total (~2×
+> on cache-heavy sessions) and overcharges cost, since the cached tokens
+> would be priced at the full input rate instead of the cache-read rate.
 
 **Response (200):**
 ```json
@@ -228,6 +243,15 @@ the same replacement. Scoped to the request namespace
 
 Use it after importing sessions recorded before the per-model split
 existed, or any time a session's per-model numbers look wrong.
+
+**Cached-token normalization.** As it recomputes, the backfill enforces
+the disjoint-fields rule above: for OpenAI / Codex-family models (`gpt-*`,
+`codex*`, `o1/o3/o4`) it subtracts the cached count from input
+(`input = input_tokens − cache_read`), since those providers fold cached
+tokens into `input_tokens`. Anthropic turns are left as-is. This is why
+recomputing is the right fix for historical Codex sessions whose totals
+were inflated — it happens at aggregation, so stored turns keep their
+provider-native shape and re-running stays idempotent.
 
 **Two modes:**
 
