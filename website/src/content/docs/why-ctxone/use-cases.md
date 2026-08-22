@@ -80,8 +80,7 @@ record of what was decided and why. Loan-approval agents ("why denied? what
 alternatives?"), medical-triage agents ("what symptoms? what confidence?"),
 content-moderation agents ("why flagged? under what policy?") all benefit from
 provenance and gates that work the same way regardless of industry. This is the
-foundation of the [regulated-teams use case](/use-cases/regulated-teams/) and
-the Enterprise [audit bundles](/editions/#enterprise).
+foundation of the [regulated-teams use case](/use-cases/regulated-teams/).
 
 ## The common thread
 

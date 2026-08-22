@@ -3,7 +3,7 @@
  * Use case page: regulated / auditable AI deployments.
  *
  * Audience: compliance-forward orgs deploying agents internally who
- * need provenance and governance. Maps to the Enterprise edition.
+ * need provenance and governance.
  */
 import LandingLayout from '../../layouts/LandingLayout.astro';
 ---
@@ -38,9 +38,7 @@ import LandingLayout from '../../layouts/LandingLayout.astro';
 				Writing to memory is a commit: agent ID, user, timestamp,
 				intent, and reason. <code>ctx blame</code> answers "who told the
 				model that?" and <code>ctx why-did-we</code> traces a decision's
-				full chain before anyone reverses it. On Enterprise, these become
-				exportable, tamper-evident audit bundles you can hand to a
-				reviewer.
+				full chain before anyone reverses it.
 			</p>
 
 			<h2>Gates on sensitive paths</h2>
@@ -82,8 +80,6 @@ import LandingLayout from '../../layouts/LandingLayout.astro';
 
 			<p class="more">
 				Next:
-				<a href="/editions/#enterprise">CTXone Enterprise overview</a>
-				&nbsp;·&nbsp;
 				<a href="/blog/who-told-the-model-that/">
 					Provenance, explained
 				</a>

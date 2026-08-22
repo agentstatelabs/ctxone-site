@@ -5,7 +5,7 @@
  * Reworked to position CTXone as the four-surface context engine
  * (memory + plans + branches + taint + provenance), not just a memory
  * layer. Sections: hero, four surfaces, six capabilities, the context
- * -anxiety vignettes, savings showcase, integrations, editions, CTA.
+ * -anxiety vignettes, savings showcase, integrations, CTA.
  */
 import LandingLayout from '../layouts/LandingLayout.astro';
 import HeroV2 from '../components/v2/HeroV2.astro';
@@ -17,7 +17,10 @@ import PairsWithASD from '../components/v2/PairsWithASD.astro';
 import ProblemSection from '../components/ProblemSection.astro';
 import SavingsShowcase from '../components/SavingsShowcase.astro';
 import IntegrationsRow from '../components/IntegrationsRow.astro';
-import Editions from '../components/v2/Editions.astro';
+// Team & Enterprise are not yet available — the Editions section is
+// withheld until those tiers ship. Restore this import and <Editions />
+// below to bring it back.
+// import Editions from '../components/v2/Editions.astro';
 import CallToAction from '../components/CallToAction.astro';
 ---
 
@@ -34,6 +37,6 @@ import CallToAction from '../components/CallToAction.astro';
 	<ProblemSection />
 	<SavingsShowcase />
 	<IntegrationsRow />
-	<Editions />
+	{/* <Editions /> — withheld until Team & Enterprise ship */}
 	<CallToAction />
 </LandingLayout>

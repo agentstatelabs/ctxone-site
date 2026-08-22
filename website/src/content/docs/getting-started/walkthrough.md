@@ -162,4 +162,4 @@ When both are installed:
 - [FEATURES.md](/reference/features/) — every `ctx` command.
 - [ARCHITECTURE.md](/how-it-works/architecture/) — pinned vs primed, how recall ranks.
 - [ASD_INTEGRATION.md](/integrations/asd-integration/) — the suite, in depth.
-- [license terms](/license/) — OSS / Team / Enterprise editions.
+- [license terms](/license/) — how CTXone is licensed (BSL-1.1).

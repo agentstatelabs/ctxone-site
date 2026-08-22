@@ -50,7 +50,8 @@ export default defineConfig({
 					label: 'Company',
 					items: [
 						{ label: 'Blog', link: '/blog/' },
-						{ label: 'Team & Enterprise', link: '/editions/' },
+						// Withheld until the Team & Enterprise tiers ship:
+						// { label: 'Team & Enterprise', link: '/editions/' },
 					],
 				},
 				{

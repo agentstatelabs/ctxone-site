@@ -55,7 +55,7 @@ Total memory tokens per session: ~1,050 tokens
 | Per day (10 sessions) | 600,000 tokens | ~10,000 tokens | 60x |
 | Per month | 18M tokens | 300k tokens | 60x |
 
-## Enterprise ROI
+## ROI at organization scale
 
 ### Mid-sized company: 10 agents, 50 conversations/day
 
@@ -82,9 +82,9 @@ Total memory tokens per session: ~1,050 tokens
 
 ### The pitch
 
-"AgentStateGraph Enterprise costs $50-250k/year. It saves $300k/year on token
-costs alone — before counting the value of consistent session quality, full
-accountability, and transparent agent state. It pays for itself."
+Memory overhead alone runs into six figures a year at organization scale.
+Structured recall removes most of it — before counting the value of consistent
+session quality, full accountability, and transparent agent state.
 
 ## Why This Is Structural, Not Incremental
 

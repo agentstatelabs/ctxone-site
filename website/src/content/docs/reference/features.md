@@ -125,8 +125,7 @@ loopback is exempt) and, if needed, browser origins (`--allowed-origin`). See
 
 ---
 
-## Editions
+## Licensing
 
-Everything above is **OSS** — self-hosted, no account. Team (shared team
-Hub) and Enterprise (multi-tenancy, RBAC/SSO, audit) build on top. See
-[license terms](/license/).
+Everything above is available in the self-hosted build — no account, no
+telemetry, nothing held back behind a tier. See [license terms](/license/).

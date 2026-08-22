@@ -63,8 +63,6 @@ not which features are unlocked:
   MCP-compatible tool. Close sessions freely; start new ones instantly.
 - **Teams** point one shared Hub at their whole toolchain, so a decision made
   once is known by everyone's agents, attributed to real people.
-- **Enterprises** add multi-tenancy, RBAC/SSO, audit bundles, and policy
-  governance on top of the open core.
 
-See [Editions](/editions/) for how those tiers differ, and
-[Use cases](/why-ctxone/use-cases/) for where a context engine earns its keep.
+See [Use cases](/why-ctxone/use-cases/) for where a context engine earns its
+keep.
