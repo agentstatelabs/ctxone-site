@@ -66,6 +66,11 @@ const year = new Date().getFullYear();
 	</div>
 
 	<div class="container footer-base">
+		<div class="parent-brand">
+			<span class="asl-glyph"></span>
+			A product of
+			<a href="https://agentstatelabs.com/" target="_blank" rel="noopener">AgentStateLabs</a>
+		</div>
 		<div class="copyright">
 			© {year} CTXone. Source-available (BSL-1.1 → Apache-2.0 after 4 years).
 		</div>
@@ -153,6 +158,32 @@ const year = new Date().getFullYear();
 
 	.footer-base a {
 		color: var(--ctx-text-dim);
+	}
+
+	/* Parent-brand lockup — see agentstatelabs-site/BRANDING.md. Sits above
+	   the copyright and stays visually separate from it: one is positioning,
+	   the other a legal notice. */
+	.parent-brand {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 13px;
+		color: var(--ctx-text-dim);
+	}
+
+	.parent-brand a {
+		color: var(--ctx-text);
+		font-weight: 600;
+	}
+
+	/* Deliberately ASL's neutral gradient, not CTXone's accent, so it reads
+	   as the parent brand rather than a CTXone element. */
+	.asl-glyph {
+		width: 15px;
+		height: 15px;
+		border-radius: 4px;
+		flex-shrink: 0;
+		background: linear-gradient(135deg, #64748b, #e2e8f0);
 	}
 
 	@media (max-width: 820px) {

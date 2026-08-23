@@ -54,6 +54,14 @@ const {
 					<a href="/use-cases/">Use cases</a>
 					<a href="/blog/">Blog</a>
 					<a
+						href="https://agentstatelabs.com/"
+						target="_blank"
+						rel="noopener"
+						class="nav-asl"
+					>
+						AgentStateLabs
+					</a>
+					<a
 						href="https://github.com/AgentStateLabs/CTXone"
 						rel="noopener"
 						class="nav-gh"
@@ -122,6 +130,16 @@ const {
 		color: var(--ctx-text-dim);
 		font-size: 0.9rem;
 		font-weight: 500;
+	}
+
+	/* Parent-brand backlink — muted, since it is an exit rather than a
+	   destination competing with CTXone's own pages. */
+	.nav-asl {
+		opacity: 0.75;
+	}
+
+	.nav-asl:hover {
+		opacity: 1;
 	}
 
 	.nav-links a:hover {
