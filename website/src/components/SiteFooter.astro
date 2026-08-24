@@ -74,6 +74,7 @@ const year = new Date().getFullYear();
 		<div class="copyright">
 			© {year} CTXone. Source-available (BSL-1.1 → Apache-2.0 after 4 years).
 		</div>
+		<div class="version">CTXone v1.0.0</div>
 		<div class="built-on">
 			Built on
 			<a
@@ -157,6 +158,13 @@ const year = new Date().getFullYear();
 	}
 
 	.footer-base a {
+		color: var(--ctx-text-dim);
+	}
+
+	/* Released version. Deliberately separate from .copyright — that line is a
+	   legal notice, not a version claim. Bump on release; nothing derives it. */
+	.version {
+		font-family: var(--ctx-font-mono, monospace);
 		color: var(--ctx-text-dim);
 	}
 
