@@ -1005,6 +1005,71 @@ this is the state-driven orchestration primitive.
 
 ---
 
+## Epoch endpoints (sealed checkpoints)
+
+Completing a plan automatically seals a per-workspace **epoch** — a
+tamper-evident, point-in-time snapshot of the workspace's memory graph at
+plan close. These endpoints view and download them.
+
+### `POST /api/plans/backfill_epochs`
+
+One-time retroactive seal of an epoch for every already-`Completed` plan in
+the workspace, so existing workspaces show checkpoints without waiting to
+re-close plans. Idempotent (skips plans already sealed); safe to re-run.
+Scoped to the request namespace (`X-CTXone-Namespace`).
+
+**Response (200):**
+```json
+{ "status": "ok", "namespace": "default", "sealed": 12, "already_sealed": 0, "failed": 0 }
+```
+
+### `GET /api/epochs`
+
+The sealed checkpoints for this workspace, newest-sealed first. Pass
+`?all=true` for the hub-wide view (every workspace, each row tagged with its
+`namespace`).
+
+**Response (200):**
+```json
+{
+  "epochs": [
+    {
+      "id": "plan:default:website-v2",
+      "namespace": "default",
+      "plan": "website-v2",
+      "status": "Sealed",
+      "created_at": "2026-08-25T04:44:52Z",
+      "sealed_at": "2026-08-25T19:30:43Z",
+      "commit_count": 14577
+    }
+  ]
+}
+```
+
+- `id` — the epoch id, `plan:<namespace>:<plan-id>`.
+- `plan` — the plan whose completion sealed it.
+- `commit_count` — the number of commits captured in the seal
+  (`sealed_commits`).
+
+> ASG epochs live in one global table, so the Hub attributes each to its
+> workspace by the `plan:<namespace>:` id prefix.
+
+### `GET /api/epochs/{id}/export`
+
+Download one sealed epoch's audit bundle (epoch metadata + the sealed-commit
+manifest) as a JSON attachment. Pass the epoch's own namespace via
+`?namespace=<ns>`.
+
+```bash
+curl -OJ "http://localhost:3001/api/epochs/plan:default:website-v2/export?namespace=default"
+```
+
+Returns `Content-Disposition: attachment` so a browser download works; the
+id must be a `plan:` epoch, or the request is rejected (**400**), and an
+unknown id returns **404**.
+
+---
+
 ## Reminder endpoints
 
 Pull-based scheduling. All reminder endpoints live under `/api/reminders/*`.
