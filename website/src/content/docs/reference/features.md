@@ -17,7 +17,7 @@ CTXone has four surfaces:
 - **CTXone Engine** (`engine/`) — the core memory + graph layer
   (AgentStateGraph).
 - **CTXone Lens** (`web/`) — the web UI: dashboard, plans, sessions, browse,
-  history, branches, taint, diff.
+  history, branches, taint, diff, and sealed checkpoints (epochs).
 - **`ctx`** (`cli/`) — the command line (everything below).
 
 ---
