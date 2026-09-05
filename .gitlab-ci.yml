@@ -20,12 +20,25 @@ build-docs:
       - website/dist/
     expire_in: 1 week
 
-# Triggers GitHub Actions workflow_dispatch on agentstatelabs/ctxone-site after every push.
-# GitHub native push triggers do not fire reliably for mirror pushes on this repo,
-# so we explicitly invoke workflow_dispatch via the GitHub API. Requires GH_PAT CI var.
+# Belt-and-braces dispatch of the GitHub Pages build.
+#
+# The original rationale here — "native push triggers do not fire for mirror
+# pushes" — was wrong. They do: ContextAnxiety-site mirrors the same way and
+# its push events fire every time. What actually blocked them was the `paths:`
+# filter on website.yml, now removed, so the mirror push alone should rebuild
+# the site.
+#
+# This job is kept as a fallback until push-triggered deploys are observed
+# working, and is allow_failure so a stale GH_PAT cannot red the pipeline or
+# block the mirror. Once push deploys are confirmed, delete this job and
+# retire the GH_PAT group variable — it is a second GitHub credential that
+# has to be rotated in lockstep with GITHUB_TOKEN, and drifting out of sync
+# is exactly what broke deploys here (401 on dispatch while the mirror was
+# already fixed).
 trigger-github-pages:
   stage: .post
   image: curlimages/curl:latest
+  allow_failure: true
   # Run AFTER publish-github mirrors main to GitHub — otherwise this dispatch
   # races the mirror and the Action rebuilds stale content (as it did once).
   needs: ["publish-github"]

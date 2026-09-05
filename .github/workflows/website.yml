@@ -10,12 +10,15 @@ name: Deploy website
 # https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site#publishing-with-a-custom-github-actions-workflow
 
 on:
+  # No `paths:` filter. A path-filtered push trigger never fired here: across
+  # 42 runs going back to June, every single one was a workflow_dispatch and
+  # not one was a push, so the site only ever rebuilt when GitLab CI poked the
+  # API. ContextAnxiety-site runs the same mirror with an unfiltered trigger
+  # and its push events fire reliably, which is the pattern copied here.
+  # The cost is a build on pushes that touch no page source; the concurrency
+  # group below already serialises those.
   push:
     branches: [main]
-    paths:
-      - 'website/**'
-      - '*.md'
-      - '.github/workflows/website.yml'
   # Allow manual runs from the Actions tab for one-off redeploys
   # (e.g. after a brand asset swap that doesn't touch source).
   workflow_dispatch:
