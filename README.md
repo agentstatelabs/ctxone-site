@@ -27,7 +27,7 @@ updates, and troubleshooting: [WINDOWS.md](WINDOWS.md).
 **Docker** (any platform — multi-arch `linux/amd64` + `linux/arm64`):
 
 ```bash
-docker run -p 3001:3001 -v ctxone-data:/data ghcr.io/ctxone/ctxone:latest
+docker run -p 3001:3001 -v ctxone-data:/data ghcr.io/agentstatelabs/ctxone:latest
 ```
 
 **Python client**:
@@ -70,7 +70,7 @@ pip install ctxone
 
 - Issues, questions, feedback: [open an issue](https://github.com/AgentStateLabs/CTXone/issues)
 - Python package: [pypi.org/project/ctxone](https://pypi.org/project/ctxone/)
-- Docker image: [ghcr.io/ctxone/ctxone](https://github.com/ctxone/ctxone-docs/pkgs/container/ctxone)
+- Docker image: [ghcr.io/agentstatelabs/ctxone](https://github.com/orgs/AgentStateLabs/packages/container/package/ctxone)
 
 ## License
 

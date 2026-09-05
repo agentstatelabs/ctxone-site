@@ -50,7 +50,7 @@ try {
 if (-not $Latest) {
     Write-Host "No releases found yet. Check back soon, or try:" -ForegroundColor Yellow
     Write-Host "  pip install ctxone              # Python client"
-    Write-Host "  docker pull ghcr.io/ctxone/ctxone:latest   # Hub container"
+    Write-Host "  docker pull ghcr.io/agentstatelabs/ctxone:latest   # Hub container"
     exit 1
 }
 

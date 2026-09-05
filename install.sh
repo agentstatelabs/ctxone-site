@@ -37,7 +37,7 @@ LATEST=$(curl -sL "https://api.github.com/repos/${REPO}/releases/latest" | grep 
 if [ -z "$LATEST" ]; then
     echo "No releases found yet. Check back soon, or try:"
     echo "  pip install ctxone              # Python client"
-    echo "  docker pull ghcr.io/ctxone/ctxone:latest   # Hub container"
+    echo "  docker pull ghcr.io/agentstatelabs/ctxone:latest   # Hub container"
     exit 1
 fi
 
