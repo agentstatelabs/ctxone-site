@@ -2,7 +2,7 @@
 # CtxOne installer — downloads ctx CLI and ctxone-hub to ~/.local/bin
 set -e
 
-REPO="ctxone/ctxone-docs"
+REPO="agentstatelabs/ctxone-releases"
 INSTALL_DIR="${HOME}/.local/bin"
 
 # Detect OS and architecture, then map to a Rust target triple

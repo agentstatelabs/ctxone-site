@@ -1,16 +1,16 @@
 # CtxOne Windows installer
 #
 # Usage:
-#   Invoke-WebRequest https://raw.githubusercontent.com/ctxone/ctxone-docs/main/install.ps1 | Invoke-Expression
+#   Invoke-WebRequest https://raw.githubusercontent.com/AgentStateLabs/CTXone/main/install.ps1 | Invoke-Expression
 #   # or, shorter:
-#   iwr https://raw.githubusercontent.com/ctxone/ctxone-docs/main/install.ps1 | iex
+#   iwr https://raw.githubusercontent.com/AgentStateLabs/CTXone/main/install.ps1 | iex
 #
 # Downloads ctx.exe and ctxone-hub.exe from the latest GitHub release and
 # drops them in %LOCALAPPDATA%\ctxone\bin, which it adds to your PATH.
 
 $ErrorActionPreference = "Stop"
 
-$Repo = "ctxone/ctxone-docs"
+$Repo = "agentstatelabs/ctxone-releases"
 $InstallDir = Join-Path $env:LOCALAPPDATA "ctxone\bin"
 
 Write-Host "CtxOne installer (Windows)" -ForegroundColor Cyan
@@ -95,4 +95,4 @@ Write-Host "  ctx init          # Configure your AI tools"
 Write-Host "  ctx serve --http  # Start the Hub"
 Write-Host "  ctx demo          # See live token savings"
 Write-Host ""
-Write-Host "Docs: https://github.com/ctxone/ctxone-docs#readme"
+Write-Host "Docs: https://github.com/AgentStateLabs/CTXone#readme"

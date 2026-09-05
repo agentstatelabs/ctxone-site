@@ -8,7 +8,7 @@ license text.
 
 For the plain-English explanation and the full rationale that
 applies to CTXone itself, see the CTXone source repository's
-[LICENSING.md](https://github.com/ctxone/ctxone/blob/main/LICENSING.md)
+[LICENSING.md](https://github.com/AgentStateLabs/CTXone/blob/main/LICENSING.md)
 (access requires collaborator permission during the pre-release
 period).
 

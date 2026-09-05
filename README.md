@@ -12,13 +12,13 @@ private repository during the pre-release period.
 **macOS / Linux** (one-liner):
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/ctxone/ctxone-docs/main/install.sh | sh
+curl -sSL https://raw.githubusercontent.com/AgentStateLabs/CTXone/main/install.sh | sh
 ```
 
 **Windows** (PowerShell, one-liner):
 
 ```powershell
-iwr https://raw.githubusercontent.com/ctxone/ctxone-docs/main/install.ps1 | iex
+iwr https://raw.githubusercontent.com/AgentStateLabs/CTXone/main/install.ps1 | iex
 ```
 
 Full Windows guide with background-service setup, AI tool paths,
@@ -68,7 +68,7 @@ pip install ctxone
 
 ## Support
 
-- Issues, questions, feedback: [open an issue](https://github.com/ctxone/ctxone-docs/issues)
+- Issues, questions, feedback: [open an issue](https://github.com/AgentStateLabs/CTXone/issues)
 - Python package: [pypi.org/project/ctxone](https://pypi.org/project/ctxone/)
 - Docker image: [ghcr.io/ctxone/ctxone](https://github.com/ctxone/ctxone-docs/pkgs/container/ctxone)
 
