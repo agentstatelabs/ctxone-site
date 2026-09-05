@@ -22,19 +22,24 @@ build-docs:
 
 # Belt-and-braces dispatch of the GitHub Pages build.
 #
-# The original rationale here — "native push triggers do not fire for mirror
-# pushes" — was wrong. They do: ContextAnxiety-site mirrors the same way and
-# its push events fire every time. What actually blocked them was the `paths:`
-# filter on website.yml, now removed, so the mirror push alone should rebuild
-# the site.
+# This job is NOT belt-and-braces. It is the only thing that deploys
+# ctxone.com. The push trigger in website.yml has never fired: 43 runs since
+# June, all workflow_dispatch, no push events and no scheduled runs.
 #
-# This job is kept as a fallback until push-triggered deploys are observed
-# working, and is allow_failure so a stale GH_PAT cannot red the pipeline or
-# block the mirror. Once push deploys are confirmed, delete this job and
-# retire the GH_PAT group variable — it is a second GitHub credential that
-# has to be rotated in lockstep with GITHUB_TOKEN, and drifting out of sync
-# is exactly what broke deploys here (401 on dispatch while the mirror was
-# already fixed).
+# The original comment blamed mirror pushes for not triggering Actions. That
+# is wrong — ContextAnxiety-site mirrors with the same byte-identical script
+# and the same site-group GITHUB_TOKEN, and its push events fire every time.
+# The `paths:` filter on website.yml was the next suspect and is also ruled
+# out: the commit removing it modified website.yml itself, which the old
+# filter matched, and still produced no run. Cause remains unknown.
+#
+# allow_failure keeps a stale GH_PAT from redding the pipeline or blocking
+# the mirror — but note that a failure here now means the site silently does
+# not deploy, so do not read a green pipeline as a published site.
+#
+# GH_PAT must be rotated in lockstep with GITHUB_TOKEN. Letting them drift is
+# what broke deploys on 2026-09-05: the mirror was repaired while dispatch
+# kept 401ing, so ctxone.com served a 10-day-old build behind green CI.
 trigger-github-pages:
   stage: .post
   image: curlimages/curl:latest

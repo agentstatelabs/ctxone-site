@@ -10,13 +10,28 @@ name: Deploy website
 # https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site#publishing-with-a-custom-github-actions-workflow
 
 on:
-  # No `paths:` filter. A path-filtered push trigger never fired here: across
-  # 42 runs going back to June, every single one was a workflow_dispatch and
-  # not one was a push, so the site only ever rebuilt when GitLab CI poked the
-  # API. ContextAnxiety-site runs the same mirror with an unfiltered trigger
-  # and its push events fire reliably, which is the pattern copied here.
-  # The cost is a build on pushes that touch no page source; the concurrency
-  # group below already serialises those.
+  # No `paths:` filter — but be aware the push trigger below does NOT work
+  # on this repo, and removing the filter did not fix it.
+  #
+  # Symptom: across 43 runs going back to June, every one is a
+  # workflow_dispatch. Not a single push event, and not a single scheduled
+  # run either, despite the weekly cron below. The site rebuilds ONLY when
+  # GitLab CI dispatches it (see trigger-github-pages in .gitlab-ci.yml).
+  #
+  # The `paths:` filter was the obvious suspect and is now ruled out: the
+  # commit that removed it also modified THIS FILE, which the old filter
+  # explicitly matched, so that push should have fired under either version.
+  # It fired under neither. Filter removed anyway (harmless, and it is not
+  # wanted once triggers work), but the real cause is still unknown.
+  #
+  # Ruled out so far: workflow state is `active`; repo is public, not
+  # archived, not disabled, default_branch=main; scripts/publish-to-github.sh
+  # is byte-identical to ContextAnxiety-site's, which mirrors with the SAME
+  # site-group GITHUB_TOKEN and does get push events every time.
+  #
+  # Consequence: deploys depend on GH_PAT staying valid alongside
+  # GITHUB_TOKEN. Rotating one and not the other leaves ctxone.com stale
+  # behind a green pipeline — which is exactly what happened on 2026-09-05.
   push:
     branches: [main]
   # Allow manual runs from the Actions tab for one-off redeploys
