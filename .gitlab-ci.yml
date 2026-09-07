@@ -48,7 +48,10 @@ trigger-github-pages:
   # races the mirror and the Action rebuilds stale content (as it did once).
   needs: ["publish-github"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $GITHUB_REPO'
+    # TEMPORARY (push-trigger diagnostic): dispatch suppressed for one commit
+    # so nothing but the mirror push touches Actions. If GitHub still creates
+    # no push run, the dispatch is not what suppresses it. Restore next commit.
+    - if: '$CI_COMMIT_BRANCH == "main" && $GITHUB_REPO && $DIAGNOSTIC_NO_DISPATCH == null'
   script:
     - |
       curl -fsS -X POST \
