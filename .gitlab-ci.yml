@@ -20,43 +20,24 @@ build-docs:
       - website/dist/
     expire_in: 1 week
 
-# Belt-and-braces dispatch of the GitHub Pages build.
+# NOTE: there is deliberately no dispatch job here any more.
 #
-# This job is NOT belt-and-braces. It is the only thing that deploys
-# ctxone.com. The push trigger in website.yml has never fired: 43 runs since
-# June, all workflow_dispatch, no push events and no scheduled runs.
+# ctxone.com used to deploy ONLY because GitLab CI poked the GitHub Pages
+# workflow over the API, using a second credential (GH_PAT) that had to be
+# rotated in lockstep with GITHUB_TOKEN. On 2026-09-05 they drifted: the
+# mirror was repaired while dispatch kept returning 401, so the site served a
+# 10-day-old build behind a fully green pipeline.
 #
-# The original comment blamed mirror pushes for not triggering Actions. That
-# is wrong — ContextAnxiety-site mirrors with the same byte-identical script
-# and the same site-group GITHUB_TOKEN, and its push events fire every time.
-# The `paths:` filter on website.yml was the next suspect and is also ruled
-# out: the commit removing it modified website.yml itself, which the old
-# filter matched, and still produced no run. Cause remains unknown.
+# The underlying fault was a wedged GitHub workflow registration — 45 runs,
+# every one a workflow_dispatch, no push and no scheduled run ever, while
+# GitHub was demonstrably receiving the pushes. Renaming website.yml to
+# deploy-website.yml (4d819b3) forced a fresh registration and push triggers
+# started working immediately; both the push run and the dispatch run for that
+# commit succeeded.
 #
-# allow_failure keeps a stale GH_PAT from redding the pipeline or blocking
-# the mirror — but note that a failure here now means the site silently does
-# not deploy, so do not read a green pipeline as a published site.
+# The mirror push alone now deploys the site, so GH_PAT is no longer used by
+# any job here and can be deleted from the site group.
 #
-# GH_PAT must be rotated in lockstep with GITHUB_TOKEN. Letting them drift is
-# what broke deploys on 2026-09-05: the mirror was repaired while dispatch
-# kept 401ing, so ctxone.com served a 10-day-old build behind green CI.
-trigger-github-pages:
-  stage: .post
-  image: curlimages/curl:latest
-  allow_failure: true
-  # Run AFTER publish-github mirrors main to GitHub — otherwise this dispatch
-  # races the mirror and the Action rebuilds stale content (as it did once).
-  needs: ["publish-github"]
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $GITHUB_REPO'
-  script:
-    - |
-      curl -fsS -X POST \
-        -H "Authorization: Bearer $GH_PAT" \
-        -H "Accept: application/vnd.github+json" \
-        https://api.github.com/repos/agentstatelabs/ctxone-site/actions/workflows/deploy-website.yml/dispatches \
-        -d '{"ref":"main"}'
-    - echo "Dispatched website.yml on agentstatelabs/ctxone-site"
 # --- added by batch-publish-sites: leak-scan-gated publish to GitHub ---
 # Uses reserved stage .post (no need to touch the existing stages list).
 # Requires CI vars GITHUB_REPO, GITHUB_TOKEN, and file-var LEAKSCAN_LOCAL.
