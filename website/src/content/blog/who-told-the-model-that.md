@@ -51,7 +51,7 @@ strategy — it can trace the decision's full provenance chain first:
 ```text
 ctx why-did-we "use BSL-1.1"
   → decision recorded 2026-06-02 by craig via cursor
-    reason: "source-available now, Apache-2.0 in 4 years"
+    reason: "source-available now, Apache-2.0 in 18 months"
     linked: /memory/legal/license, /memory/strategy/oss
 ```
 
