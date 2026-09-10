@@ -75,6 +75,6 @@ pip install ctxone
 ## License
 
 CTXone is distributed under Business Source License 1.1, converting to
-Apache 2.0 four years after each release. See [LICENSE](LICENSE) for
+Apache 2.0 18 months after each release. See [LICENSE](LICENSE) for
 the full text.
 
