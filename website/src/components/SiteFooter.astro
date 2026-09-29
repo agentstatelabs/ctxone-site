@@ -74,7 +74,7 @@ const year = new Date().getFullYear();
 		<div class="copyright">
 			© {year} CTXone. Source-available (BSL-1.1 → Apache-2.0 after 18 months).
 		</div>
-		<div class="version">CTXone v1.0.11</div>
+		<div class="version">CTXone <span data-release="ctxone">v1.0.11</span></div>
 		<div class="built-on">
 			Built on
 			<a
@@ -86,6 +86,19 @@ const year = new Date().getFullYear();
 		</div>
 	</div>
 </footer>
+
+<!-- The current release lives in https://agentstatelabs.com/releases.json so a
+     version bump does not need a CTXone deploy. The text above is the fallback. -->
+<script is:inline>
+	fetch('https://agentstatelabs.com/releases.json', { cache: 'no-cache' })
+		.then(function (r) { return r.json(); })
+		.then(function (v) {
+			document.querySelectorAll('[data-release]').forEach(function (el) {
+				if (v[el.dataset.release]) el.textContent = v[el.dataset.release];
+			});
+		})
+		.catch(function () {});
+</script>
 
 <style>
 	.footer {
