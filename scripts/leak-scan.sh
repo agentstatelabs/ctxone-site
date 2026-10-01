@@ -71,6 +71,7 @@ ALLOW_PATHS=(
 
 hits_block=0
 hits_warn=0
+hits_warn_quiet=0
 : >"$LOG_FILE"
 
 log() { printf '%s\n' "$*" | tee -a "$LOG_FILE"; }
@@ -100,7 +101,19 @@ scan_ref() {
     while IFS= read -r line; do
       # For a committish, git grep already prefixes "<commit>:"; only the
       # working-tree scan needs a label.
-      if [ -z "$ref" ]; then log "  [$tier] (working tree): ${line}"; else log "  [$tier] ${line}"; fi
+      if [ -z "$ref" ]; then
+        log "  [$tier] (working tree): ${line}"
+      elif [ "$tier" = WARN ]; then
+        # A history scan greps each commit's whole tree, so a WARN term is
+        # reported once per commit that contains it — tens of thousands of
+        # lines, enough to overflow a CI job log (GitLab cuts at 4 MB) and push
+        # the BLOCK lines and the summary out of it. WARN never fails a scan:
+        # keep these in the log file and count them on stdout.
+        printf '%s\n' "  [$tier] ${line}" >>"$LOG_FILE"
+        hits_warn_quiet=$((hits_warn_quiet+1))
+      else
+        log "  [$tier] ${line}"
+      fi
       if [ "$tier" = BLOCK ]; then hits_block=$((hits_block+1)); else hits_warn=$((hits_warn+1)); fi
     done <<EOF
 $out
@@ -147,6 +160,9 @@ if [ -n "$tracked_bad" ]; then
 fi
 
 log ""
+if [ "$hits_warn_quiet" -gt 0 ]; then
+  log "leak-scan: ${hits_warn_quiet} WARN hit(s) in commits not printed (one per commit containing the term; details in ${LOG_FILE})"
+fi
 log "leak-scan: ${hits_block} BLOCK hit(s), ${hits_warn} WARN hit(s)  (log: ${LOG_FILE})"
 
 # Notification hook — set LEAKSCAN_NOTIFY to an executable to wire email later.
