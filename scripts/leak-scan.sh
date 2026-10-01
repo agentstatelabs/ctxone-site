@@ -69,6 +69,33 @@ ALLOW_PATHS=(
 # Per-repo overrides (append to arrays above).
 [ -f "${REPO_ROOT}/.leakscan.local" ] && . "${REPO_ROOT}/.leakscan.local"
 
+# --- word boundaries: \b is not portable ------------------------------------
+# git grep uses the platform's regex engine. glibc (CI) understands \b in an
+# ERE; macOS's does not, and there a \b pattern silently matches nothing — a
+# Mac scan reported 0 hits for a term CI flagged 384 times. macOS spells word
+# boundaries [[:<:]] / [[:>:]] instead. Probe once and rewrite only where \b
+# is unsupported, so platforms that understand \b scan the patterns verbatim.
+probe_dir="$(mktemp -d)"
+printf 'ab\n' >"$probe_dir/p"
+if (cd "$probe_dir" && git grep --no-index -qE '\bab\b' -- p) 2>/dev/null; then
+  word_bounds=native
+elif (cd "$probe_dir" && git grep --no-index -qE '[[:<:]]ab[[:>:]]' -- p) 2>/dev/null; then
+  word_bounds=bsd
+else
+  word_bounds=none
+fi
+rm -rf "$probe_dir"
+
+# portable_pattern <ERE> — a \b right after a word character, closing bracket
+# or quantifier ends a word; any other \b starts one.
+portable_pattern() {
+  if [ "$word_bounds" = bsd ]; then
+    printf '%s' "$1" | sed -E 's/([]_[:alnum:])*+?}])\\b/\1[[:>:]]/g; s/\\b/[[:<:]]/g'
+  else
+    printf '%s' "$1"
+  fi
+}
+
 hits_block=0
 hits_warn=0
 hits_warn_quiet=0
@@ -86,6 +113,7 @@ scan_ref() {
   if [ "$tier" = BLOCK ]; then set -- ${BLOCK[@]+"${BLOCK[@]}"}; else set -- ${WARN[@]+"${WARN[@]}"}; fi
   label="$ref"; [ -z "$ref" ] && label="(working tree)"
   for p in "$@"; do
+    p="$(portable_pattern "$p")"
     if [ -n "$ref" ]; then
       out=$(git grep -nIE -e "$p" "$ref" -- "${ALLOW_PATHS[@]}" 2>/dev/null || true)
     else
@@ -141,6 +169,9 @@ case "$MODE" in
 esac
 
 log "leak-scan: mode=$MODE refs=${#refs[@]}"
+if [ "$word_bounds" = none ]; then
+  log "leak-scan: WARNING — this git's regex has no word-boundary syntax; patterns using \\b will not match"
+fi
 for r in ${refs[@]+"${refs[@]}"}; do
   scan_ref BLOCK "$r"
   scan_ref WARN "$r"
