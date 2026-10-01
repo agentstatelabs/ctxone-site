@@ -74,7 +74,7 @@ const year = new Date().getFullYear();
 		<div class="copyright">
 			© {year} CTXone. Source-available (BSL-1.1 → Apache-2.0 after 18 months).
 		</div>
-		<div class="version">CTXone <span data-release="ctxone">v1.0.11</span></div>
+		<div class="version">CTXone <span data-release="ctxone">v1.0.12</span></div>
 		<div class="built-on">
 			Built on
 			<a
@@ -175,7 +175,10 @@ const year = new Date().getFullYear();
 	}
 
 	/* Released version. Deliberately separate from .copyright — that line is a
-	   legal notice, not a version claim. Bump on release; nothing derives it. */
+	   legal notice, not a version claim. Filled in at page load from
+	   releases.json (script above), which the CTXone tag pipeline's
+	   site-version job updates on every release; the markup's version is only
+	   the fallback when that fetch fails. */
 	.version {
 		font-family: var(--ctx-font-mono, monospace);
 		color: var(--ctx-text-dim);
