@@ -9,7 +9,13 @@ doc lists every endpoint, its request format, response format, and any
 query parameters.
 
 All endpoints live under `http://<host>:<port>/api/`. Default host and port:
-`0.0.0.0:3001`. CORS is enabled with `Allow-Origin: *`.
+`0.0.0.0:3001`. The same daemon also serves **MCP over HTTP at `/mcp`** and,
+with `--lens`, the web UI — one process, all three surfaces (see
+[MCP over HTTP](#mcp-over-http) and [Authentication](#authentication) below).
+
+Cross-origin requests are guarded, not wide open: same-origin is always
+allowed, and any request carrying a foreign `Origin` header is rejected unless
+that origin is allow-listed (`--allowed-origin` / `CTXONE_ALLOWED_ORIGINS`).
 
 ## Conventions
 
@@ -21,6 +27,11 @@ All endpoints live under `http://<host>:<port>/api/`. Default host and port:
 - **Content type:** requests and responses use `application/json`.
 - **Error responses:** HTTP 4xx for bad input, 5xx for server errors. Body
   is plain text with a human-readable message.
+- **Unchanged writes:** a write that would leave its path holding what it
+  already holds makes no commit: `remember`, `prime`, imports, session
+  turns, titles, meta, provenance, burn and analysis, summaries, plan and
+  session links, and doc registrations. Its `commit_id` is then the ref's
+  head, where the value already is.
 
 ## Namespaces
 
@@ -47,12 +58,33 @@ Rules:
   exist return **404**.
 - Cross-namespace merge is deny-by-default: attempting it returns
   **403** (per AgentStateGraph's isolation rules).
+- Names beginning with `_` are reserved for CTXone; a project can't use
+  one.
+
+### The personal namespace
+
+`_personal` holds what belongs to the person rather than to a project: the
+agent rules `ctx agents install` primes, and preferences remembered with
+`ctx remember --personal`. Any request may name it with
+`?namespace=_personal`, and the first one creates it. It has only `main`.
+
+Recall reads it as well as the request's namespace, and so does
+`GET /api/memory/pinned`. Each result names the namespace it came from in
+`namespace`, and where both hold the same path, the workspace's own copy
+wins. On a multi-tenant Hub, each tenant has its own. It will sync only to
+the user's own space ([the Hub sync design](https://github.com/agentstatelabs/ctxone/blob/main/docs/design/HUB_SYNC.md)).
+
+Over MCP, where the namespace is fixed for the connection, `remember`,
+`forget` and `prime` take `personal: true` instead. A personal write isn't
+refused when a session fell back to `default`, since it names where it goes.
 
 ## Health
 
 ### `GET /api/health`
 
-Simple liveness check.
+Simple liveness check. It needs no token on any Hub, so load balancers and
+container health checks can call it, and it isn't rate limited. A token sent
+with it is still checked: a wrong one is a **401**.
 
 **Response (200):**
 ```json
@@ -63,6 +95,17 @@ Simple liveness check.
 ```
 
 Used by `ctx status` and `ctx doctor`.
+
+### `GET /api/tenant`
+
+The tenant the request's bearer token belongs to, so a client can check a
+token (see [Multi-tenant mode](#multi-tenant-mode)). `null` on a single-tenant
+Hub.
+
+**Response (200):**
+```json
+{ "tenant": "alice" }
+```
 
 ---
 
@@ -90,7 +133,7 @@ Cumulative token savings **aggregated across every session**.
 - `session_tokens_saved` — sum of `(recalls × flat_baseline) - used`
   across all sessions
 - `total_graph_size_chars` — **max** observed across sessions (graph
-  size is process-global, not summable)
+  size is the whole graph's, not summable)
 - `total_graph_size_tokens` — `chars ÷ 4`
 - `cumulative_ratio` — `(used + saved) / used`
 
@@ -131,6 +174,45 @@ List every known session with its current stats.
 
 Sorted by `session_id`. The `"default"` session is always present even
 on a fresh Hub.
+
+### `PUT /api/sessions/{sid}/usage`
+
+Replace a session's per-model LLM usage, and keep it in the session's
+envelope at `/sessions/{sid}/usage`. `ctx ingest-session` and
+`ctx session import` send it, worked out from the whole transcript, so a Hub
+that gets no turns still has per-model usage. Sending the same usage again
+writes nothing, and a grown session's usage replaces the old rather than adding
+to it.
+
+**Request body:**
+```json
+{
+  "by_model": {
+    "claude-opus-4-8": {
+      "input_tokens": 119,
+      "output_tokens": 29518,
+      "cache_read_tokens": 3342296,
+      "cache_create_tokens": 95623,
+      "call_count": 5
+    }
+  },
+  "last_model": "claude-opus-4-8"
+}
+```
+
+For OpenAI-family models, `input_tokens` leaves out the cached tokens, as
+everywhere else on the Hub. At most 256 models, each name 1 to 200 bytes; an
+empty `by_model` leaves the session's split as it is.
+
+The envelope holds the same split plus the session's `tokens_sent` and
+`tokens_saved` as of the call. It travels with the workspace (export and
+import), so a Hub with no statistics for a session lists it in
+`GET /api/stats/sessions` and costs it in `GET /api/stats/plan/{plan}/cost`
+from the envelope. Dollar costs aren't stored: Lens prices the tokens when it
+reads them.
+
+**Response (200):** `{"status": "ok", "ref", "path", "commit_id"}`, or
+`{"status": "unchanged", "ref", "path"}` when the envelope already held it.
 
 ### `POST /api/stats/llm_usage`
 
@@ -538,10 +620,13 @@ existed (in which case `commit_id` is omitted).
 ## Project endpoints
 
 A **project** maps a code repo to an ASG namespace. The registry lives
-in the Hub's sqlite database (`projects` and `project_paths` tables) —
-memory/postgres backends have no registry, so project endpoints return
-**400** there. Registered projects are what the CLI and MCP server use
-to auto-detect the namespace from a working directory.
+in the Hub's database: the sqlite file's `projects` and `project_paths`
+tables, or on Postgres the `ctxone_projects` and `ctxone_project_paths`
+tables, where every row carries the Hub's tenant, so Hubs sharing a
+database never see each other's projects. The memory backend has no
+registry, so project endpoints return **400** there. Registered projects
+are what the CLI and MCP server use to auto-detect the namespace from a
+working directory.
 
 ### `GET /api/projects`
 
@@ -585,15 +670,33 @@ operations work immediately).
 
 - `id` (required) — project id (kebab-case). Doubles as the namespace
   name unless `namespace` is given.
-- `remote_url` — git remote for detection. Normalized on write:
-  trailing `.git` and `/` are stripped.
+- `remote_url` — git remote for detection. Kept in canonical form,
+  `host/path` lowercased, without scheme, user, password, port, trailing
+  `/` or `.git`, so `git@github.com:alice/myrepo.git` and
+  `https://github.com/alice/myrepo` are both `github.com/alice/myrepo`. A
+  remote with no such form (a local path) only loses a trailing `.git` and
+  `/`. Host aliases aren't resolved: an IP address and a DNS name for one
+  server, or an `~/.ssh/config` alias, are different remotes. The Hub
+  rewrites remotes registered before this in canonical form when it starts
+  and when it opens a tenant; ids and workspaces don't change. When two
+  projects' remotes turn out to be one repository, the older one gets the
+  canonical form, and the other keeps its remote and is found by its path
+  or `.ctxproject` (the Hub logs it).
 - `namespace` — explicit namespace name (default: the id)
 - `display_name` — human-readable name
 - `local_path` — checkout path to bind
 
+The Hub also keeps the project's namespace, remote and display name in the
+[personal namespace](#the-personal-namespace) at `/ctxone/projects/<id>`, so
+the registry can follow the person to other machines. Local paths stay on
+this machine. At every start (and tenant open) the Hub writes any record
+that's missing or differs, and registers a project for a record it has no
+row for, without local paths.
+
 **Response (200):** the project object (same shape as `GET /api/projects`
 entries). Returns **409** on a duplicate `id` or `remote_url`, **400**
-on an invalid namespace name.
+on an invalid namespace name or an `id` or `namespace` beginning with `_`
+(reserved for CTXone).
 
 ### `GET /api/projects/{id}`
 
@@ -615,23 +718,55 @@ session started there would land in:
 
 1. `.ctxproject` file (first non-empty line = project id) in `cwd` or
    any parent
-2. `git remote get-url origin` looked up in the registry (URLs
-   normalized the same way as on write)
+2. `git remote get-url origin` looked up in the registry (in the same
+   canonical form as on write, so an ssh clone finds a project registered
+   from https)
+3. the longest registered `local_path` containing `cwd`
+
+Steps 1 and 2 read the directory, which only works on the machine it is
+on. So `ctx` reads it itself and sends what it found; the Hub then reads
+nothing and only looks it up, which also works for a Hub on another
+machine:
+
+| Parameter | Meaning |
+|-----------|---------|
+| `client_read=true` | The caller read `cwd`; use the parameters below instead of reading it |
+| `ctxproject=<id>` | The id in the nearest `.ctxproject` |
+| `ctxproject_error=<msg>` | The nearest `.ctxproject` exists but couldn't be read |
+| `remote_url=<url>` | `git remote get-url origin` as git prints it (the Hub normalizes it) |
+
+Without `client_read` (older clients), the Hub reads `cwd` on its own
+machine. A [multi-tenant](#multi-tenant-mode) Hub reads nothing of its own
+and answers **400**.
 
 **Response (200):**
 ```json
 { "status": "found", "via": "ctxproject", "project_id": "myrepo", "namespace": "myrepo" }
 ```
 
-`via` is `"ctxproject"` or `"remote"` (remote matches also carry
-`remote_url`). No match:
+`via` is `"ctxproject"`, `"remote"` (also carries `remote_url`) or
+`"local_path"` (also carries `local_path`). No match:
 
 ```json
 { "status": "not_found", "namespace": "default" }
 ```
 
-Non-sqlite backends report `{ "status": "registry_unavailable",
+The memory backend reports `{ "status": "registry_unavailable",
 "namespace": "default" }`.
+
+Only those three `200` answers say where a session belongs. Anything else
+means detection did not finish, and the directory may well have a project —
+callers must not treat it as `not_found`:
+
+| Status | `status` | When |
+|--------|----------|------|
+| **500** | `error` | The registry query failed, or a `.ctxproject` exists but couldn't be read (`ctxproject_error`, or the Hub's own read; on macOS, a denied Files & Folders prompt) and no later step matched |
+| **503** | `busy` | 16 earlier detections are still stuck; refused without starting another |
+| **504** | `timeout` | Detection ran past 3 s — typically the Hub blocked reading `cwd` for an older client, e.g. on a pending macOS privacy prompt |
+
+```json
+{ "status": "timeout", "error": "project detection did not finish within 3s — …" }
+```
 
 ---
 
@@ -661,6 +796,10 @@ Store a fact.
 - `context` — category name; storage path is `/memory/<context>/<id>`
 - `tags` — queryable tags stored on the commit
 - `ref` — branch to write to (default `main`)
+
+To remember something personal, send it to the personal namespace:
+`POST /api/memory/remember?namespace=_personal` with `ref` `main`
+([The personal namespace](#the-personal-namespace)).
 
 **Response (200):**
 ```json
@@ -708,6 +847,9 @@ Retrieve memories for a topic. Pinned-first, token-scored, budget-capped.
 
 **Response (200):** see the `recall` response schema in
 [CLI_REFERENCE.md](/reference/cli/#recall-response).
+
+Recall reads the [personal namespace](#the-personal-namespace)'s `main` as
+well, and each result carries the `namespace` it came from.
 
 Every recall updates the session token counters — each call's `sent`
 contributes to `session_tokens_used` on `GET /api/stats/tokens`.
@@ -775,14 +917,18 @@ List all pinned memories.
 **Response (200):**
 ```json
 [
-  {"path": "/memory/pinned/project/the-insight/title", "value": "The Insight"},
-  {"path": "/memory/pinned/project/the-insight/body", "value": "..."},
+  {"path": "/memory/pinned/project/the-insight/title", "value": "The Insight", "namespace": "myrepo"},
+  {"path": "/memory/pinned/project/the-insight/body", "value": "...", "namespace": "myrepo"},
+  {"path": "/memory/pinned/ctxone-agents/standing-rules/title", "value": "Standing rules", "namespace": "_personal"},
   ...
 ]
 ```
 
 Clients typically group these by `/memory/pinned/<source>/<slug>` and pair
 the `/title` and `/body` children to reconstruct structured sections.
+The workspace's own leaves come first, then the
+[personal namespace](#the-personal-namespace)'s, leaving out any path the
+workspace also holds. `namespace` says which one each came from.
 Returns an empty array (not 404) when no pinned memories exist.
 
 ### `POST /api/memory/summarize_session`
@@ -837,6 +983,50 @@ Search for a decision and return its blame chain.
 }
 ```
 
+### `GET /api/secrets/scan`
+
+Credential-shaped strings in what would sync: every branch of the request's
+namespace and of the personal namespace. Raw session turns are skipped
+unless asked for. This is what `ctx secrets scan` calls. A scan reads the
+personal namespace but doesn't create it.
+
+**Query params:**
+- `ref` — scan one branch; every branch when absent
+- `turns` — `true` to scan raw session turns too (default `false`)
+- `all` — `true` to scan every namespace in the store instead
+- `limit` — stop after this many findings (default 1000, at most 10000)
+
+**Response (200):**
+```json
+{
+  "scanned": [{ "namespace": "repo-a", "ref": "main" },
+              { "namespace": "_personal", "ref": "main" }],
+  "turns": false,
+  "strings": 4182,
+  "findings": [
+    {
+      "namespace": "repo-a",
+      "ref": "main",
+      "path": "/memory/ci/18e45270505dc388",
+      "rule": "github-token",
+      "name": "GitHub token",
+      "confidence": "high",
+      "masked": "ghp_…(40 chars)",
+      "forget": "/memory/ci/18e45270505dc388"
+    }
+  ],
+  "truncated": false
+}
+```
+
+`masked` never holds the secret. `forget` is the record to pass to
+`POST /api/memory/forget` (a memory entry, or one part of a session's
+envelope), or `null` where there's none, such as a plan task. `strings`
+counts each string read once; content shared by several branches is read
+once for all of them. `confidence` is `high` for a provider's own token
+format or a private key, and `medium` for shapes ordinary text sometimes
+takes.
+
 ---
 
 ## Error responses
@@ -857,7 +1047,9 @@ The body is plain text, not JSON. Clients should log and retry on 5xx.
 
 The Hub enforces a **per-peer-IP token-bucket rate limit** in HTTP mode.
 Default: **600 requests/minute per IP** (permissive — catches runaway
-loops without bothering real agents).
+loops without bothering real agents). Loopback peers aren't limited. In
+[multi-tenant mode](#multi-tenant-mode) the limit is per tenant instead,
+wherever its requests come from, loopback included.
 
 Clients that exceed the bucket get:
 
@@ -883,6 +1075,11 @@ the `"default"` session. Per-session stats are exposed via:
 - `GET /api/stats/sessions` — all sessions
 - `GET /api/stats/tokens` — cross-session aggregate (backward-compat)
 
+The Hub saves session stats every 30 seconds and on shutdown, and loads
+them at startup: to the `ctxone_sessions` table of its sqlite file, or of
+its Postgres database, one row set per tenant. The memory backend keeps
+them only while it runs.
+
 The Python client accepts a `session_id` constructor arg or reads
 `CTX_SESSION_ID` from the environment.
 
@@ -897,8 +1094,15 @@ wrote each fact.
 Absent the header, commits are attributed to `"ctxone"`. The Python
 client accepts an `agent_id` constructor arg or reads `CTX_AGENT_ID`
 from the environment; the Hub binary accepts `--agent-id <name>`
-for MCP stdio mode (which is what `ctx init` wires into the
-generated `.mcp.json` / `.cursor/mcp.json` etc).
+for MCP stdio mode.
+
+MCP over HTTP (`/mcp`) reads the agent ID the same way, from
+`X-CTXone-Agent` or, for clients that can't send headers, `?agent=<name>`
+(which wins). `ctx init` writes the tool's ID into each entry it generates
+(`.mcp.json`, `.cursor/mcp.json` and so on: a header, an `mcp-remote`
+`--header`, or Codex's query string). An MCP request that names none, or
+one longer than 128 bytes or with a control character, is attributed to
+the Hub's `--agent-id`.
 
 See [docs/TROUBLESHOOTING.md#per-tool-agent-ids](/operating/troubleshooting/#per-tool-agent-ids)
 for the full resolution order and examples.
@@ -991,6 +1195,29 @@ unknown.
 
 Body: `{ "reason": "superseded" }`. Reason is required (empty
 reasons return `400`).
+
+### `PATCH /api/plans/{name}/tasks/{task_id}`
+
+Change a task's title, description, priority or blockers. Send only the
+fields to change:
+
+```json
+{ "title": "Rewrite the hero", "blocked_by": ["t-009"], "ref": "main" }
+```
+
+- `title` keeps the task's description, and `description` keeps its title
+  (`""` removes the description).
+- `blocked_by` replaces the whole list (`[]` clears it).
+- `force: true` allows editing a done or abandoned task.
+
+Status, proof, assignment and timestamps never change. Returns the task
+with `changed`, the fields that changed (empty when nothing did).
+
+Errors:
+- `400`: an empty edit, a blank title, or an unknown priority.
+- `404`: an unknown task, or a blocker that isn't in the plan.
+- `409`: blockers that would form a cycle, or a finished task without
+  `force`.
 
 ### `POST /api/plans/{name}/archive`
 
@@ -1131,15 +1358,129 @@ Record execution outcome. Body: `{ "result": "success|failed|deferred|snoozed|ca
 
 ---
 
+## MCP over HTTP
+
+The same daemon that serves this REST API also serves MCP over HTTP
+(Streamable HTTP) at:
+
+```
+POST /mcp?namespace=<ns>
+```
+
+This is what `ctx init --transport http` points AI tools at, and it's the
+standard setup (one process covers MCP + REST + Lens; see
+[Architecture](/how-it-works/architecture/)). The `namespace` query parameter selects
+the project namespace exactly like the REST endpoints. The list of tools
+served here is documented in [MCP tools](/reference/mcp-tools/). The bearer token and
+Origin guard below apply to `/mcp` just as they do to `/api/*`.
+
+---
+
 ## Authentication
 
-The HTTP API currently has **no authentication**. Run the Hub on a
-trusted network (loopback, VPN, or private subnet) or put a reverse
-proxy in front with whatever auth layer you already use.
+The HTTP surface (REST **and** `/mcp`) is guarded by an **optional bearer
+token**:
 
-Multi-tenant auth is tracked as future work — see the engine's
-`agentstategraph-mcp` binary, which supports `--auth` and `--keys-file`
-for tenant isolation. CTXone Hub doesn't currently expose these.
+- Set it with `--auth-token <TOK>` or `CTXONE_AUTH_TOKEN=<TOK>`, or keep tokens
+  in a file with `--auth-token-file <PATH>` or `CTXONE_AUTH_TOKEN_FILE` (not
+  both). The file holds one token per line (blank lines and `#` comments are
+  ignored), every listed token is accepted, and the hub re-reads it every
+  second, so tokens rotate without a restart: add the new token, move clients
+  to it, then remove the old line. An empty file accepts no token. If a later
+  read fails, the tokens last read stay in force; a file that can't be read at
+  startup stops the hub.
+- When set, **non-loopback** requests must send `Authorization: Bearer <TOK>`;
+  requests are rejected with **401** otherwise. `GET /api/health` needs none.
+  **Loopback peers are exempt** by default, so a hub bound to `127.0.0.1` needs
+  no token and local tools keep working. `--require-auth-on-loopback` (or
+  `CTXONE_REQUIRE_AUTH_ON_LOOPBACK=1`) ends the exemption, for a hub fronted by
+  a proxy or sidecar on 127.0.0.1, where every request arrives from loopback.
+  It needs a token, and with it the hub hands its own `ctx` (session sync and
+  import) the token as `CTX_TOKEN`.
+- **Lens** sends a token once the hub asks for one. On a **401** it asks for
+  the token, checks it with `GET /api/tenant`, keeps it in the browser's
+  storage for the hub's origin, and sends it as `Authorization: Bearer` on every
+  call. A refused token is forgotten and asked for again; *Forget token* in the
+  sidebar removes it. Its own files need no token.
+- When unset, there is no authentication. If the hub is bound to a non-loopback
+  interface, it logs a warning that REST and `/mcp` are reachable unauthenticated
+  — set a token before exposing it beyond loopback.
+
+Cross-origin requests are additionally guarded (see the [intro](#http-api-reference)):
+same-origin passes; a foreign `Origin` is rejected unless allow-listed via
+`--allowed-origin` / `CTXONE_ALLOWED_ORIGINS` (comma-separated). With
+`--strict-origin` (or `CTXONE_STRICT_ORIGIN=1`) only the listed origins pass:
+an `Origin` matching the request's `Host` isn't enough, since behind an ingress
+or under DNS rebinding `Host` is whatever the caller sent. A hosted hub lists
+its Lens origin and sets this.
+
+### Multi-tenant mode
+
+One Hub can serve many tenants, each with its own data, from one Postgres
+database ([the multi-tenant Hub design](https://github.com/agentstatelabs/ctxone/blob/main/docs/design/MULTI_TENANT_HUB.md); how to
+run one: [Deployment](/operating/deployment/#one-hub-for-many-users)):
+
+```bash
+ctxone-hub --http --tenants-file /etc/ctxone/tenants \
+  --storage postgres --database-url "$DATABASE_URL"
+```
+
+`--tenants-file <PATH>` (or `CTXONE_TENANTS_FILE`) turns it on. It needs `--http`
+and Postgres; `--storage memory` keeps the tenants in memory, to try it out. It
+replaces `--auth-token`, `--auth-token-file` and `--tenant`. Every tenant shares
+one connection pool of `--pg-pool-size` connections (or `CTXONE_PG_POOL_SIZE`;
+default 32). With `--lens`, Lens asks each browser for a tenant's token, as
+above, and shows that tenant's data, leaving out the Code views, session import
+and transcript sync, which are off. With `--strict-origin` too, list the Hub's
+own origin with `--allowed-origin`, since that's where Lens calls from; with no
+`--allowed-origin` the Hub refuses to start.
+
+- **The tenants file** has a line per token: `<tenant> <sha256 of the token>`,
+  the hash as 64 hex digits. A tenant may have several lines. A line
+  `disabled <tenant> <sha256 of the token>` keeps a token and refuses it. Blank
+  lines and `#` comments are ignored. Tenant names are 1 to 63 of `a-z`, `0-9`
+  and `-`. Only hashes are stored, so the file doesn't reveal a token.
+- **`ctxone-hub tenant`** edits the file (`--tenants-file`, or
+  `CTXONE_TENANTS_FILE`): `add <name>` creates a tenant and prints its token
+  once, `list` shows the tenants and their tokens, `rotate <name>` replaces a
+  tenant's tokens, and `disable <name>` and `enable <name>` refuse or accept
+  them, keeping the tenant's data. `purge <name>` deletes the data of a tenant
+  the file lists as disabled from the database (`--database-url`, or
+  `DATABASE_URL`), and then its tokens. It asks for the tenant's name first unless given `--yes`, and waits a
+  minute so that every Hub has closed the tenant.
+- **It's re-read every second,** so adding a tenant or rotating a token needs no
+  restart. A file with a bad line stops the hub at startup. Later, a bad line is
+  skipped with a warning and the rest apply, so a typo locks out only that line.
+  A hash listed for two tenants is refused for both. If the file can't be read,
+  the tenants last read stay in force; an empty file refuses every token.
+- **Every request needs a token that belongs to a tenant,** loopback included,
+  since there's no local user. The exception is `GET /api/health`, which needs
+  none. An unknown token is a **401**. The tenant is attached to the request,
+  rate limits are per tenant, and request log lines carry it as
+  `ctxone.tenant`, never the token.
+- A `TenantResolver` decides the tenant. The Hub's reads the tenants file; an
+  account service can supply its own. One that can't answer gives a **503**.
+- **Each tenant has its own data:** memory, plans, workspaces, the project
+  registry, session statistics and MCP sessions. Tenants can use the same
+  workspace names, project ids and session ids without meeting, and an MCP
+  session belongs to the tenant that started it. A tenant opens on its first
+  request that needs its data, which creates the tenant if it's new and brings
+  its schema up to date. If it can't be opened, the request gets a **503** and
+  the next one tries again. `GET /api/health` needs no data and opens nothing.
+- **A tenant closes when it's idle,** 30 minutes after its last request, and
+  within 30 seconds once none of its tokens is accepted. Its session statistics
+  are saved every 30 seconds while it's open, when it closes and when the Hub
+  stops.
+- **Nothing acts on the Hub's own machine,** since the tenants are elsewhere.
+  These answer **404**: `POST /api/sessions/sync`, `GET
+  /api/sessions/discoverable`, `POST /api/sessions/import`, `ignore` and
+  `unignore`, `/api/sessions/autosync`, `POST /api/admin/backup` and
+  `/api/code`. Project detection needs `client_read=true` (a **400** without
+  it). `GET /api/help` and the MCP `help` tool answer from the Hub's own docs
+  and ask no other program. The MCP code tools say there's nothing to reach.
+  The flags for those features (`--asd-url`, `--asd-path`, `--asd-serve-binary`,
+  `--asd-idle-timeout`, `--ctx-binary`) are refused at startup, and the Hub logs
+  what's off.
 
 ---
 

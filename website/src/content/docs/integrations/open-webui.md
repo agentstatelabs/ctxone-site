@@ -45,7 +45,7 @@ You need a running CTXone Hub somewhere Open WebUI can reach. The
 
 1. In Open WebUI: **Admin Panel → Functions → +**
 2. Paste the entire contents of
-   [`bindings/python/src/ctxone/integrations/openwebui.py`](../bindings/python/src/ctxone/integrations/openwebui.py)
+   [`bindings/python/src/ctxone/integrations/openwebui.py`](https://github.com/agentstatelabs/ctxone/blob/main/bindings/python/src/ctxone/integrations/openwebui.py)
 3. Save. Open WebUI reads the `requirements: ctxone>=0.9.0` line in
    the docstring frontmatter and auto-installs the client into its
    Python environment (make sure
@@ -164,7 +164,7 @@ the container itself. Change `hub_url` to either:
 - `http://host.docker.internal:3001` (macOS, Windows, recent Linux)
 - `http://172.17.0.1:3001` (Linux default Docker bridge)
 - Or run both in the same `docker compose` network — see
-  [`docker-compose.yml`](../docker-compose.yml) for a working setup.
+  [`docker-compose.yml`](https://github.com/agentstatelabs/ctxone/blob/main/docker-compose.yml) for a working setup.
 
 ### "The Filter takes too long, chat feels slow"
 
@@ -194,8 +194,9 @@ ctx ls /memory/openwebui/
 ctx --branch <your-branch> recall "<topic>"
 ```
 
-Or browse through CTXone Lens at `http://localhost:5173/browse` — the
-blame panel shows which user wrote each fact via Open WebUI and when.
+Or browse through CTXone Lens at `http://localhost:3001/browse` — served by
+the hub itself (run with `--lens`). The blame panel shows which user wrote
+each fact via Open WebUI and when.
 
 ## Related docs
 

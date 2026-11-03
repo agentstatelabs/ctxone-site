@@ -64,6 +64,11 @@ and in the future — recalls it for near-free instead of rediscovering it.
 - Context is written **once** and read **many** times, at recall cost rather than
   rediscovery cost.
 
+The sharing happens through one Hub. Agents on one machine share it because
+`ctx init` points them all at the same Hub. Machines share it when they connect
+to one Hub ([Connect to a Hub](/operating/connect-a-hub/)); two Hubs share nothing until
+sync is built ([the Hub sync design](https://github.com/agentstatelabs/ctxone/blob/main/docs/design/HUB_SYNC.md)).
+
 The economic shift is from *O(sessions)* rediscovery to *O(1)* discovery plus
 cheap recalls. See [MEMORY_BRANCH_SCOPING.md](/how-it-works/memory-branch-scoping/)
 for how namespaces keep each repo's memory isolated.

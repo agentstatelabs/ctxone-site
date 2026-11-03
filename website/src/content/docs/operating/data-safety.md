@@ -2,7 +2,7 @@
 title: "Data safety"
 description: "Your memory database is the only thing in CTXone that can't be regenerated. Lose it and you lose every fact, plan, and provenance record the hub ever wrote d…"
 sidebar:
-  order: 3
+  order: 4
 ---
 Your memory database is the only thing in CTXone that can't be regenerated.
 Lose it and you lose every fact, plan, and provenance record the hub ever
