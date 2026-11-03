@@ -2,7 +2,7 @@
 title: "Cookbook"
 description: "Real-world recipes for putting CTXone into a developer workflow. Every recipe is self-contained and copy-pasteable."
 sidebar:
-  order: 1
+  order: 2
 ---
 Real-world recipes for putting CTXone into a developer workflow. Every recipe
 is self-contained and copy-pasteable.
@@ -201,8 +201,8 @@ ctx diff main experiment
 # Try recalling on the experiment branch
 ctx --branch experiment recall "naming"
 
-# If you like it: merge (there's no merge command yet — use Repository::merge
-# via the engine directly, or just keep writing to the experiment branch)
+# If you like it: merge the experiment branch back into main
+ctx merge experiment --into main
 
 # If you don't: switch back
 export CTX_BRANCH=main
@@ -219,8 +219,8 @@ Run the Hub against a Postgres instance so multiple developers (or multiple
 machines) see the same memory graph.
 
 ```bash
-# Start the Hub pointing at Postgres
-export DATABASE_URL=postgres://ctxone:secret@db.internal:5432/ctxone
+# Start the Hub pointing at Postgres, over verified TLS
+export DATABASE_URL='postgres://ctxone:secret@db.internal:5432/ctxone?sslmode=verify-full'
 ctx serve --http --storage postgres
 ```
 
@@ -244,7 +244,9 @@ services:
     image: ghcr.io/agentstatelabs/ctxone:latest
     command: ["ctxone-hub", "--http", "--port", "3001", "--storage", "postgres"]
     environment:
-      DATABASE_URL: postgres://ctxone:secret@db:5432/ctxone
+      # Plaintext on the compose network, said explicitly. A database you
+      # reach over a network you don't control takes sslmode=verify-full.
+      DATABASE_URL: postgres://ctxone:secret@db:5432/ctxone?sslmode=disable
     depends_on: [db]
     ports:
       - "3001:3001"
@@ -252,6 +254,13 @@ services:
 volumes:
   ctxone-pg-data:
 ```
+
+For TLS to a managed Postgres, and providers with their own CA, see
+[Postgres over TLS](/operating/deployment/#postgres-over-tls).
+
+The project registry (`ctx project add`) and session stats live in the
+same database, in `ctxone_*` tables, so they survive a restart and a new
+Hub container.
 
 Each team member points their CLI at the shared Hub:
 
@@ -267,9 +276,10 @@ ctx --branch team/backend remember "..."
 ctx --branch team/frontend remember "..."
 ```
 
-**Caveat:** Postgres auth in the Hub is single-tenant right now. For
-multi-tenant deployments with per-team isolation, wait for a future release
-or run separate Hub instances.
+**Caveat:** a Hub started this way serves one tenant. To keep teams apart
+on one Hub, give each its own tenant with
+[multi-tenant mode](/operating/deployment/#one-hub-for-many-users), or run separate Hub
+instances.
 
 ---
 

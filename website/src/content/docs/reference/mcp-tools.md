@@ -1,29 +1,24 @@
 ---
 title: "MCP tools"
-description: "The CTXone Hub exposes 90+ MCP tools over the stdio transport. The core tools are grouped here; call the help tool for the complete, current list."
+description: "Every MCP tool the CTXone Hub serves, over HTTP at /mcp (the standard setup) and over stdio, grouped by what it does."
 sidebar:
   order: 2
 ---
-The CTXone Hub exposes **90+ MCP tools** over the stdio transport. The core
-tools are grouped below; the running binary is the source of truth — call the
-`help` tool (or `ctx help`) for the complete, current list plus per-tool
-syntax, examples, and gotchas on demand.
+The CTXone Hub exposes **68 MCP tools**, served over HTTP at `/mcp` (the
+standard setup) and over stdio, in ten groups:
 
-- **Memory & recall** (8): `remember`, `recall`, `prime`, `context`,
-  `forget`, `get`, `ls`, `search`
-- **Provenance & history** (5): `why_did_we`, `blame`, `log`, `diff`,
-  `what_changed_since`
-- **Sessions & accounting** (6): `project_status`, `summarize_session`,
-  `session_segments`, `session_info`, `session_link_plan`, `record_llm_usage`
-- **Help & docs** (2): `help`, `docs_find`
-- **Plans** (15): `plan_new`, `plan_add`, `plan_start`, `plan_done`,
-  `plan_abandon`, `plan_next`, `plan_list`, `plan_show`, `plan_link`,
-  `plan_stale`, `plan_archive`, `plan_move`, `plan_complete`, `plan_close`,
-  `plan_tasks`
-- **Branches & merge** (3): `branches`, `branch`, `merge`
-- **Drafts** (4): `draft_stage`, `drafts_list`, `draft_promote`,
-  `draft_discard`
-- **Taint** (4): `taint_list`, `taint_check`, `taint_apply`, `taint_remove`
+- **Memory** (8): `remember`, `recall`, `prime`, `context`,
+  `summarize_session`, `what_changed_since`, `why_did_we`,
+  `project_status`
+- **Curation** (5): `session_segments`, `draft_stage`, `drafts_list`,
+  `draft_promote`, `draft_discard`
+- **Plans** (16): `plan_new`, `plan_add`, `plan_start`,
+  `plan_done`, `plan_abandon`, `plan_edit`, `plan_next`, `plan_list`,
+  `plan_show`, `plan_tasks`, `plan_link`, `plan_stale`, `plan_move`,
+  `plan_close`, `plan_complete`, `plan_archive`
+- **Sessions and workspaces** (4): `session_info`, `session_link_plan`,
+  `namespace_for_plan`, `namespace_for_task`
+- **Docs and help** (2): `docs_find`, `help`
 - **Reminders** (9): `reminder_create`, `remind_me`, `reminder_list`,
   `reminder_get`, `reminder_snooze`, `reminder_approve`, `reminder_cancel`,
   `reminder_start`, `reminder_record`
@@ -42,24 +37,29 @@ For the underlying concepts, see [ARCHITECTURE.md](/how-it-works/architecture/).
 
 ## Connecting
 
-In your AI tool's MCP config:
+**Standard (HTTP daemon).** Point your tool at a running `ctxone-hub --http`
+by URL — one daemon serves MCP + REST + Lens (see [Architecture](/how-it-works/architecture/)):
 
 ```json
-{
-  "mcpServers": {
-    "ctxone": {
-      "command": "/path/to/ctxone-hub",
-      "args": ["--path", "/Users/you/.ctxone/memory.db"]
-    }
-  }
-}
+{ "mcpServers": { "ctxone": {
+  "type": "http",
+  "url": "http://localhost:3001/mcp?namespace=<detected>"
+} } }
 ```
 
-`ctx init` writes this config for you automatically in every detected
-tool.
+**Fallback (stdio).** The Hub also speaks MCP over stdio when spawned per-client
+without `--http` — it stays alive for the agent session and handles one client
+at a time:
 
-The Hub runs in stdio mode when invoked without `--http`. It stays alive
-for the duration of the agent session and handles one client at a time.
+```json
+{ "mcpServers": { "ctxone": {
+  "command": "/path/to/ctxone-hub",
+  "args": ["--path", "/Users/user/.ctxone/memory.db"]
+} } }
+```
+
+`ctx init` writes the right shape for you automatically in every detected tool
+(defaulting to the http daemon; `--transport stdio` for the fallback).
 
 ## Namespace & branch mirroring
 
@@ -116,9 +116,15 @@ Store a fact, preference, or decision.
 | `context` | string | no | — | Category (becomes `/memory/<context>/<id>`) |
 | `tags` | string[] | no | — | Queryable tags |
 | `ref` | string | no | `main` | Branch to write to |
+| `personal` | bool | no | false | Write to the personal namespace's `main` instead of this workspace |
 
 **Response:** JSON object with `status`, `path`, `commit_id`, `ref`,
-`namespace` (which project namespace the write landed in), `fact`.
+`namespace` (which namespace the write landed in), `fact`.
+
+`personal: true` is for what belongs to the person rather than the
+project, such as a preference. Every workspace's recall reads the personal
+namespace, and a personal write isn't refused when the session fell back to
+`default` ([HTTP API](/reference/http-api/#the-personal-namespace)).
 
 **When to call:** any time the agent learns a fact about the user's project
 that should persist to the next session. Agents are encouraged to call this
@@ -146,9 +152,11 @@ Retrieve memories for a topic.
 **Response:** JSON with `results`, `pinned_count`, `topic_matches`,
 `ctx_tokens_sent`, `ctx_tokens_estimated_flat`, `ctx_savings_ratio`.
 
-Results are structured: each item has `path` and `pinned: bool`. Pinned
-items also have `title` and `body`; topic matches have `value`, `score`,
-and `full_match`.
+Results are structured: each item has `path`, `pinned: bool` and
+`namespace`. Pinned items also have `title` and `body`; topic matches have
+`value`, `score`, and `full_match`. Recall reads the personal namespace's
+`main` as well as this workspace, so `namespace` is either the workspace or
+`_personal`; where both hold the same path, the workspace's copy wins.
 
 **When to call:** at the start of every agent session, and whenever the
 agent needs project-specific context mid-session. Think of it as "search
@@ -174,6 +182,7 @@ Load structured sections as pinned or primed memory.
 | `pinned` | bool | no | false | If true, always include in recall |
 | `sections` | array | yes | — | Array of `{title, body}` objects |
 | `ref` | string | no | `main` | Branch to write to |
+| `personal` | bool | no | false | Prime into the personal namespace's `main`, as `ctx agents install` does |
 
 **Response:** JSON with `sections_written` count and `paths` array.
 
@@ -370,9 +379,102 @@ unambiguous.
 
 ---
 
+## Curation
+
+Five tools turn a session into durable memory, with the user deciding what's
+kept. Split the session into arcs, stage candidate memories from the arcs
+worth keeping, then keep or drop each candidate. Drafts live under
+`/drafts/<session>/` and aren't recalled until they're promoted. The
+session's turns stay in the archive either way.
+
+### `session_segments`
+
+Split a session into topic **arcs**: contiguous stretches of turns on one git
+branch and working directory. An arc ends at a branch change, a
+working-directory change, or an idle gap. No LLM is involved.
+
+**When to call:** before drafting memories from a session. A session is
+rarely one topic, so keep the arcs that matter and drop whole tangents.
+
+**Parameters:** `session_id`, `gap?` (idle minutes that start a new arc;
+default 30, and `0` turns the rule off), `ref?`.
+
+**Returns:** `{ session_id, gap_minutes, segment_count, segments }`. Each
+segment has its turn range (`start`, `end`, `turn_count`), `branch`, `cwd`,
+start and end times, `tokens`, a `label`, and the `reason` it started
+(`start`, `branch`, `cwd` or `gap`).
+
+---
+
+### `draft_stage`
+
+Stage a **candidate** memory distilled from an arc. It isn't durable: it waits
+in `/drafts/<session>/` for the user to keep, edit or drop.
+
+**When to call:** after `session_segments`, once for each decision, gotcha or
+open thread worth keeping. The user decides what matters; you surface
+candidates.
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `session_id` | string | yes | Session the candidate came from |
+| `content` | string | yes | The candidate memory |
+| `kind` | string | no | `decision`, `gotcha`, `open_thread` or `fact` |
+| `turns` | [int, int] | no | Source turn range, carried onto the memory as provenance |
+| `arc` | string | no | Label of the arc it came from |
+| `context` | string | no | Suggested memory context for promotion |
+| `pin` | bool | no | Suggest pinning on promotion |
+| `ref` | string | no | Branch (default `main`) |
+
+**Returns:** the staged draft, with its `draft_id` and `path`.
+
+---
+
+### `drafts_list`
+
+List a session's staged drafts for review, each with its content, kind,
+source turn range, and suggested context and pin.
+
+**Parameters:** `session_id`, `ref?`.
+
+**Returns:** `{ session_id, drafts }`.
+
+---
+
+### `draft_promote`
+
+Promote a draft to **durable memory**, the "keep" half of curation. Writes its
+content under `/memory/<context>/`, or `/memory/pinned/curated/` when it's
+pinned, records the source session and turn range in the commit, and removes
+the draft.
+
+**When to call:** only for drafts the user chose to keep.
+
+**Parameters:** `session_id`, `draft_id`, `context?` (overrides the draft's
+suggestion; default `facts`), `importance?` (`high` 0.95, `medium` 0.7 by
+default, `low` 0.4), `ref?`.
+
+**Returns:** `{ status: "promoted", path, pinned, source: { session, turns } }`.
+
+---
+
+### `draft_discard`
+
+Drop a staged draft, the "drop" half of curation. It never reaches durable
+memory, and the session's turns stay in the archive.
+
+**Parameters:** `session_id`, `draft_id`, `reason?` (recorded in blame),
+`ref?`.
+
+**Returns:** `{ status: "discarded", draft_id }`.
+
+---
+
 ## Plan tools
 
-Twelve MCP tools wrap the plan primitives from the
+Sixteen MCP tools wrap the plan primitives from the
 `agentstategraph-tasks` crate and surface them with proactive
 "CALL THIS WHEN" descriptions. Plans persist under `/plans/<name>/`
 and survive session boundaries — the same plan can be picked up by
@@ -464,6 +566,32 @@ no longer wanted. Legal from both `pending` and `in_progress`.
 
 ---
 
+### `plan_edit`
+
+Change a task's title, description, priority or blockers after it was
+added. Status, proof, assignment and timestamps never change.
+
+**When to call:** a task's scope or wording changed, or its blockers need
+fixing. An abandoned blocker never counts as done, so after abandoning a
+task, edit its dependents' blockers.
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `plan_id` | string | yes | Plan name |
+| `task_id` | string | yes | Task to edit |
+| `title` | string | no | New title; the description is kept |
+| `description` | string | no | New description, or `""` to remove it; the title is kept |
+| `priority` | string | no | `low`, `medium`, `high` or `critical` |
+| `blocked_by` | string[] | no | The whole new blocker list (`[]` clears it). Each must be a task in this plan, and the list can't form a cycle |
+| `force` | bool | no | Edit a done or abandoned task (default false) |
+| `ref` | string | no | Branch (default `main`) |
+
+Returns the task with `changed`, the fields that changed.
+
+---
+
 ### `plan_next`
 
 Return the highest-priority pickable task.
@@ -534,14 +662,29 @@ target ref.
 
 ---
 
+### `plan_close`
+
+Close a finished plan with a **required summary** of what it achieved, the
+plan-level analog of a task's proof. Refuses unless every task is done or
+abandoned. Prefer it to `plan_complete`, which force-closes a plan that still
+has open tasks.
+
+**When to call:** the plan's last task is finished. Afterwards, push the
+plan's commits and open an MR for its branch.
+
+**Parameters:** `plan_id`, `summary`, `ref?`.
+
+---
+
 ### `plan_complete`
 
-**Force-complete an entire plan in one shot** — marks every remaining
-task done with a "force-complete" reason and closes the plan. Use
-when remaining work is no longer relevant (scope cut, plan
-superseded). For incremental progress, prefer `plan_done` per task.
+**Force-close a whole plan in one shot**: abandons every still-open task with
+a reason, then closes the plan with a required summary. Use it when the
+remaining work no longer matters (scope cut, plan superseded). When every task
+is already finished, use `plan_close`; for progress, use `plan_done` per task.
 
-**Parameters:** `plan_id`, `reason`, `ref?`.
+**Parameters:** `plan_id`, `summary`, `reason?` (stamped on each abandoned
+task; default "Plan force-completed by user"), `ref?`.
 
 ---
 
@@ -550,6 +693,127 @@ superseded). For incremental progress, prefer `plan_done` per task.
 Set plan status to `archived`. Soft — task data is preserved.
 
 **Parameters:** `plan_id`, `ref?`.
+
+---
+
+### `plan_link`
+
+Record that a task, when done, **satisfies a task in another plan** — a
+cross-plan dependency pointer (the substrate's `blocked_by` is within-plan
+only). Advisory: it does not auto-close the target; completing the linked task
+surfaces a reminder to close the other one.
+
+**When to call:** work in one plan closes out a task tracked in another.
+
+**Parameters:** `plan_id`, `task_id`, `target` (as `"plan/task"`), `ref?`.
+
+---
+
+### `plan_stale`
+
+List **in-progress tasks idle for N days** (default 7) across active plans,
+most-stale first. The drift guard `plan_start`'s warning defends against.
+
+**When to call:** resuming work or auditing state to catch tasks left silently
+in-progress. Complements `plan_next`, which only returns the next *pending*
+task and never shows what's in progress.
+
+**Parameters:** `days?` (default 7), `ref?`.
+
+---
+
+## Sessions and workspaces
+
+### `session_info`
+
+Describe a session: the workspace it lives in, the git branches it touched
+(with turn counts), and the plan tasks it worked on.
+
+**When to call:** before acting on a session, to confirm it's in the workspace
+you expect or to see what plans it advanced. A session belongs to the
+workspace of the repo it ran in; if this reports another one, you're
+connected to the wrong workspace (reconnect with `?namespace=<name>`, or set
+`CTX_NAMESPACE` for the CLI).
+
+**Parameters:** `session_id`, `ref?`.
+
+**Returns:** `{ session_id, namespace, present_in_this_workspace, provenance,
+links }`. `provenance` and `links` are `null` for sessions recorded before
+they were captured.
+
+---
+
+### `session_link_plan`
+
+Record that a session worked on a plan task. Links from commit messages that
+name a task (a `(plan t-NNN)` trailer) are derived automatically; this records
+the rest, such as a refactor with no trailer, or work discussed but not
+committed.
+
+**Parameters:** `session_id`, `plan`, `task` (`t-4` or `t-004`), `note?` (kept
+as the link's evidence), `ref?`.
+
+**Returns:** `{ status, plan, task, validated, already_linked }`.
+`validated: false` means the plan or task isn't in this workspace. The link is
+still recorded, but you're probably connected to the wrong workspace.
+
+---
+
+### `namespace_for_plan`
+
+Find which workspace holds a plan, by scanning every workspace.
+
+**When to call:** you have a plan id but not its workspace, for example after
+a write was refused because no workspace could be derived, or when resuming
+with a plan id from another session.
+
+**Parameters:** `plan_id`.
+
+**Returns:** `{ plan_id, namespaces, hint }`. Pass the workspace as
+`CTX_NAMESPACE`, `--namespace` or `?namespace=`.
+
+---
+
+### `namespace_for_task`
+
+Find which workspace holds a task, by scanning every workspace for the task
+under its plan.
+
+**Parameters:** `plan_id`, `task_id`.
+
+**Returns:** `{ plan_id, task_id, namespaces, hint }`.
+
+---
+
+## Docs and help
+
+### `docs_find`
+
+Find registered canonical docs whose path/scope/answers/owner match a query
+(omit `query` to list all). Returns each doc's path, status, scope, and what it
+answers — a **pointer** to the canonical `.md` file, not its content.
+
+**When to call:** before reading files or writing a new doc, to find where a
+topic is already documented. Distinct from `prime`, which imports doc *content*
+into `recall`.
+
+**Parameters:** `query?`, `ref?`.
+
+---
+
+### `help`
+
+Exact syntax, examples and gotchas for a `ctx` or `asd` feature, on demand
+(about 150-250 tokens), instead of carrying every tool's full docs in context.
+The docs are compiled into the Hub, so they match the running code.
+
+**When to call:** before using a feature whose exact syntax you're unsure of.
+Omit `topic` for the grouped catalog of every feature, to discover ones you'd
+otherwise miss.
+
+**Parameters:** `topic?`: a feature name (`remember`) or a phrase ("save a
+memory"); it fuzzy-matches. A topic that isn't here may be an `asd` feature,
+and the response says so.
 
 ---
 
@@ -566,7 +830,8 @@ Forget a path by writing a rollback commit. The data isn't physically
 removed — its history is preserved in blame — but `get` and
 `recall` will no longer surface it.
 
-**Parameters:** `path`, `reason?`, `ref?`.
+**Parameters:** `path`, `reason?`, `ref?`, `personal?` (forget from the
+personal namespace; a recall result's `namespace` says which holds it).
 
 **When to call:** when a fact is wrong, expired, or the user
 explicitly asks to forget it. Prefer `forget` over editing a fact in
@@ -996,6 +1261,38 @@ List symbols called by the given symbol (outbound call edges).
 
 ---
 
+### `code_cross_repo_edges`
+
+Map the service edges between every repo registered with ASD: a client call
+in one repo matched to the route that serves it in another. It runs
+`asd repo edges` over the shared repo registry, so index each repo first to
+keep its contracts current.
+
+**When to call:** before a cross-service change, or to find hidden
+dependencies between repos. For one endpoint's blast radius, use
+`code_impact`; this returns every edge.
+
+**Parameters:** none.
+
+**Returns:** every cross-repo edge, as JSON from `asd`.
+
+---
+
+### `code_impact`
+
+Given an endpoint you're about to change, return its consumers in other repos
+and the invariants and hazards each consumer's own ledger records: what
+breaks if it changes, and what those callers were promised. It runs
+`asd repo impact <target>`.
+
+**Parameters:** `target`: a route-handler qname (`get_orders` or
+`app.routes.get_orders`) or a contract (`http:GET /api/orders/{}`).
+
+**Returns:** the consumers and their invariants and hazards, as JSON from
+`asd`.
+
+---
+
 ### `get_active_repo`
 
 Return the active ASD repo for this session (set via `set_active_repo`),
@@ -1063,4 +1360,4 @@ request/response conventions as the tools above; call the `help` tool
 - [INTEGRATIONS.md](/integrations/ai-coding-tools/) — how to wire these tools into specific AI clients
 - [ASD_INTEGRATION.md](/integrations/asd-integration/) — full guide to the ASD code intelligence integration
 - [ARCHITECTURE.md](/how-it-works/architecture/) — the underlying graph model
-- [AGENTS.md](AGENTS.md) — guidance on when to reach for plans vs. inline work
+- [Agent guidance](/reference/agent-guidance/) — guidance on when to reach for plans vs. inline work

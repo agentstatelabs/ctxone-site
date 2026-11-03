@@ -1,6 +1,6 @@
 ---
 title: "Features & commands"
-description: "A complete tour of what CTXone does and every `ctx` command it exposes. For a narrative \"how do I actually use this\" guide, read [WALKTHROUGH.md](WALKTHROUGH…"
+description: "A tour of what CTXone does and every `ctx` command it exposes."
 sidebar:
   order: 0
 ---
@@ -12,7 +12,7 @@ a narrative "how do I actually use this" guide, read
 
 CTXone has four surfaces:
 
-- **CTXone Hub** (`server/`) — MCP server (90+ tools) + HTTP API; the memory
+- **CTXone Hub** (`server/`) — MCP server (68 tools) + HTTP API; the memory
   interface for AI tools.
 - **CTXone Engine** (`engine/`) — the core memory + graph layer
   (AgentStateGraph).
@@ -44,7 +44,7 @@ CTXone has four surfaces:
 |---|---|
 | `ctx init` | Auto-detect and configure your AI tools with the CTXone MCP server. `--transport http` (default — point tools at a shared daemon by URL) or `--transport stdio` (each tool spawns its own hub); `--mcp-url`, `--auth-token`/`--auth-token-env` to embed a bearer; `--tool claude/cursor/vscode/codex/gemini/grok`, `--global` vs `--project`, `--config-path`, `--dry-run`. |
 | `ctx service install/uninstall/status` | Install the Hub as a login/boot service (launchd on macOS, systemd user unit on Linux, Task Scheduler on Windows) so the daemon owns the db before any tool starts. `--port`, `--path`, `--no-lens`, `--auth-token`, `--dry-run`. |
-| `ctx agents install/show` | Manage `AGENTS.md` — a short pinned document that teaches AI tools how to use CTXone. Prompts before writing unless `--yes`. |
+| `ctx agents install/show/migrate` | Manage `AGENTS.md` — a short pinned document that teaches AI tools how to use CTXone. It's pinned in your personal namespace, which every workspace's recall reads; `migrate` removes the per-workspace copies earlier versions made. |
 | `ctx skill` | Install CTXone's **Agent Skill** (`SKILL.md`) into each host's skills directory. Version-stamped. Installs the combined **CTXone + ASD** suite skill when the `asd` CLI is present. `--status` / `--dry-run` / `--project` / `--tool` / `--remove`. |
 | `ctx bootstrap` | Print a paste-into-your-agent block that installs + primes CTXone — and offers to set up AgentStateDeveloper too. |
 | `ctx serve` | Start the CTXone Hub. `--http` serves the REST API **and MCP at `/mcp`** (Streamable HTTP); `--lens` adds the web UI — one process for all three. `--port`, `--storage sqlite/postgres/memory`, `--path <db>`, `--auth-token` (bearer for non-loopback), `--allowed-origin` (extra browser origins). |
@@ -59,9 +59,10 @@ CTXone has four surfaces:
 | `ctx remember <fact>` | Store a fact. `--importance high/medium/low`, `--context <category>`, `--tags`. |
 | `ctx recall <topic>` | Retrieve the most relevant memories for a topic within a `--budget` (tokens). `--exact` re-tokenizes with tiktoken for precise counts. |
 | `ctx context <project>` | Load full context for a project. |
-| `ctx prime <file>` | Load a markdown file as primed memory; `--pin` makes it always-included. |
+| `ctx prime <file>` (alias `ctx import-doc`) | Load a markdown file as primed memory; `--pin` makes it always-included. |
 | `ctx pinned` | List pinned (always-included) memories. |
 | `ctx forget <path>` | Delete a memory at a path; `--reason` shows up in blame. |
+| `ctx secrets scan` | Find credential-shaped strings (API keys, tokens, private keys) in what this workspace and your personal namespace would sync, with a masked match and the `ctx forget` that removes each. `--all` scans every workspace, `--turns` raw turns too. |
 | `ctx search <query>` | Literal substring search over the graph — full matching paths and values, no budget (unlike recall). |
 | `ctx ls [prefix]` / `ctx get <path>` | List paths under a prefix / read the value at a path. |
 | `ctx tokens [text]` | Count exact tokens (tiktoken cl100k_base); reads stdin if no argument. |
@@ -70,7 +71,16 @@ CTXone has four surfaces:
 
 | Command | What it does |
 |---|---|
-| `ctx plan new/add/next/done/…` | Manage plans: create a plan, add tasks, ask "what's next?", and mark tasks done with proof (`--proof commit:abc1234`). Plans persist across sessions and stay anchored to reality. |
+| `ctx plan new/add/start/next/done` | Core loop: create a plan, add tasks, `start` a task, ask "what's next?" (`--in-order` for sequential plans), and mark tasks `done` with proof (`--proof commit:abc1234`, or `file:`/`test:`/`text:`). Plans persist across sessions and stay anchored to reality. |
+| `ctx plan link <plan> <task> <plan/task>` | Cross-plan link: mark that a task, when done, satisfies a task in another plan (target given as `plan/task`, e.g. `other-plan/t-002`). |
+| `ctx plan stale [--days N]` | Surface in-progress tasks idle for N days (stalled work). |
+| `ctx plan list --all-namespaces` | Global plan inventory across every namespace. |
+
+### Docs registry
+
+| Command | What it does |
+|---|---|
+| `ctx docs add/list/find` | Index canonical docs (READMEs, guides) so agents can discover and `find` them by topic instead of re-reading the tree. Exposed to agents as the `docs_find` MCP tool. |
 
 ### Branches & history
 
@@ -105,13 +115,15 @@ CTXone has four surfaces:
 | Command | What it does |
 |---|---|
 | `ctx db backup/restore` | Snapshot the live db (SQLite `VACUUM INTO`, consistent against a running hub) or restore from a snapshot (hub must be stopped). |
+| `ctx db export/import` | Export the branch graph to a portable JSON snapshot / import (merge) one back — for migration, review, or seeding another db. |
 
 ---
 
 ## MCP tools & HTTP API
 
-The Hub exposes **90+ MCP tools** to agents — memory (`remember`, `recall`,
-`context`), plans, branches, taint (`taint_*`), provenance (`why_did_we`,
+The Hub exposes **68 MCP tools** to agents — memory (`remember`, `recall`,
+`context`), plans (incl. `plan_link`, `plan_stale`), the docs registry
+(`docs_find`), branches, taint (`taint_*`), provenance (`why_did_we`,
 `summarize_session`), and token accounting (`record_llm_usage`). Full list:
 [MCP_TOOLS.md](/reference/mcp-tools/). The REST surface is in
 [HTTP_API.md](/reference/http-api/).

@@ -1,6 +1,6 @@
 ---
 title: "CLI reference"
-description: "Complete reference for the `ctx` command-line tool. For task-oriented recipes, see [COOKBOOK.md](COOKBOOK.md). For the mental model, see [ARCHITECTURE.md](AR…"
+description: "Complete reference for the `ctx` command-line tool."
 sidebar:
   order: 1
 ---
@@ -32,9 +32,20 @@ variables.
 absent, every Hub-bound command resolves the namespace via the project
 detection chain for the current directory: a `.ctxproject` file in the
 cwd or any parent, then the repo's git remote looked up in the Hub's
-project registry. No match — or Hub unreachable — silently falls back
-to the `default` namespace. See [`ctx project`](#ctx-project--map-repos-to-namespaces)
-below.
+project registry, then a registered local path containing the cwd. `ctx`
+reads the marker and the remote itself and the Hub only looks them up,
+so this works with a Hub on another machine. No match falls back to the
+`default` namespace.
+
+If the Hub can't answer — it times out, reports an error, or is
+unreachable — the command stops with `can't tell which workspace <dir>
+belongs to` instead of guessing `default` (exit `75` timeout, `76` Hub
+error, `69` unreachable). Pass `--namespace` to skip detection. `ctx
+status` and `ctx doctor` report the failure rather than stopping, `ctx
+init` carries on with a warning only when the Hub isn't running yet, and
+local-only commands (`tokens`, `worktree`) never detect. See
+[Troubleshooting §11](/operating/troubleshooting/#11-ctx-cant-tell-which-workspace-dir-belongs-to)
+and [`ctx project`](#ctx-project--map-repos-to-namespaces) below.
 
 **Branch resolution.** Precedence for the working branch:
 
@@ -62,6 +73,7 @@ Follows `sysexits.h` conventions.
 | Code | Name | Meaning |
 |------|------|---------|
 | 0 | OK | Success |
+| 1 | — | `ctx secrets scan` found something; `ctx db fsck` found damage |
 | 64 | USAGE | Clap handled an argument error |
 | 65 | DATAERR | Bad input data (empty fact, malformed file, no sections) |
 | 66 | NOINPUT | Input file doesn't exist or can't be read |
@@ -88,12 +100,19 @@ OPTIONS:
   -i, --importance <LEVEL>  high | medium | low  [default: medium]
   -c, --context <NAME>      Group under /memory/<context>/
   -t, --tags <TAGS>         Queryable tags
+      --personal            Store it in your personal namespace instead of
+                            this workspace; every workspace's recall reads it
 ```
+
+`--personal` is for what's yours rather than the project's, such as a
+preference. It goes to the personal namespace's `main`
+([HTTP API](/reference/http-api/#the-personal-namespace)).
 
 **Examples:**
 
 ```bash
 ctx remember "We use BSL-1.1" --importance high --context licensing
+ctx remember "I prefer small commits" --context preferences --personal
 echo "fact" | ctx remember -
 ctx remember "deployed" --format id    # prints just the commit id
 ```
@@ -101,7 +120,9 @@ ctx remember "deployed" --format id    # prints just the commit id
 ### `ctx recall <topic>`
 
 Retrieve memories relevant to a topic. Always includes pinned context first,
-then topic-matched facts, respecting a token budget.
+then topic-matched facts, respecting a token budget. It reads your personal
+namespace as well as this workspace, and marks what came from it
+`personal`.
 
 ```
 USAGE: ctx recall <TOPIC> [OPTIONS]
@@ -164,7 +185,52 @@ ARGS:
 
 OPTIONS:
       --reason <TEXT>  Shows up in blame  [default: "forgotten by user"]
+      --personal       Forget it from your personal namespace (recall
+                       marks those results `personal`)
 ```
+
+### `ctx secrets scan`
+
+Find credential-shaped strings in what this workspace would sync, so you can
+forget them first. Run it before connecting a remote Hub, and again before a
+first sync.
+
+```
+USAGE: ctx secrets scan [OPTIONS]
+
+OPTIONS:
+      --turns          Also scan raw session turns
+      --all            Scan every workspace in the store, not just this one
+      --branch <NAME>  Scan one branch (the global option); every branch
+                       otherwise
+```
+
+It scans every branch of the current workspace and of your personal
+namespace. Raw session turns stay on this machine, so they're skipped unless
+you pass `--turns`.
+
+- **High confidence:** private keys, and AWS, GitHub, GitLab, Anthropic,
+  OpenAI, Slack, Stripe live, Google, Hugging Face, npm, PyPI and CTXone Hub
+  tokens.
+- **Medium:** JSON web tokens, a password in a URL, and secret-named values
+  such as `api_key = …`.
+
+Each finding shows a masked match, never the value, and the command that
+forgets the record holding it:
+
+```
+high    GitHub token  ghp_…(40 chars)
+        /memory/ci/18e45270505dc388  (default: main)
+        ctx forget /memory/ci/18e45270505dc388
+```
+
+A finding outside memory and session envelopes, such as a plan task's title,
+has no forget command: edit the value instead. Forgetting removes a value
+from the branch as it is now; earlier commits keep it. Sync's first push is
+shallow, so those commits don't go with it.
+
+Exits 1 when anything is found. `--format json` prints the Hub's response
+(see `GET /api/secrets/scan` in [HTTP API](/reference/http-api/)).
 
 ### `ctx context <project>`
 
@@ -273,6 +339,52 @@ OPTIONS:
 ```
 
 Merging across namespaces is denied by default (the Hub returns 403).
+That restriction is about **merging branches** — to *relocate* data (a plan,
+a session, or any subtree) into another workspace, use the move commands
+below, which are allowed and safe.
+
+---
+
+## Moving data between workspaces
+
+Data written before per-workspace routing existed (or written from an
+unregistered directory) lands in the reserved `default` namespace. These
+commands relocate it into the correct workspace. All three share one guarded
+core: the subtree is written to the target and **verified** there before the
+original is removed — the source is never deleted unless the target provably
+holds the same leaves, so an interrupted or corrupt move cannot lose data.
+
+### `ctx move <path> --to-namespace <ns>`
+
+The general primitive: move an arbitrary subtree of graph paths to another
+workspace (and/or branch).
+
+```
+USAGE: ctx move <PATH> --to-namespace <NS> [OPTIONS]
+
+ARGS:
+  <PATH>                 Subtree to relocate, e.g. /memory/<...>, /sessions/<id>, /plans/<slug>
+
+OPTIONS:
+      --to-namespace <NS>       Target workspace (required)
+      --from-namespace <NS>     Source workspace  [default: resolved from cwd]
+      --to-branch <REF>         Target branch     [default: source branch]
+      --no-delete               Copy instead of move (leave the source in place)
+      --dry-run                 Report leaf count + target state without mutating
+```
+
+Refuses a whole-branch move (`/`) — that is `ctx merge` territory.
+
+### `ctx plan relocate <name> --to <ns>`
+
+Typed shortcut for plans, carrying tasks and cross-plan links. See
+[`ctx plan`](#ctx-plan--durable-task-lists).
+
+### `ctx session move <id> --to <ns>`
+
+Typed shortcut for a single session's `/sessions/<id>` subtree. To bulk-route
+every mis-filed session by the directory it ran in, use
+`ctx session reattribute` instead.
 
 ---
 
@@ -470,29 +582,70 @@ OPTIONS:
 For the Postgres backend, the connection string is read from the
 `DATABASE_URL` environment variable, not a flag:
 `export DATABASE_URL=postgres://… && ctx serve --http --storage postgres`.
+Add `?sslmode=verify-full` for a database on another machine (and
+`&sslrootcert=<CA file>` for a provider with its own CA); see
+[Postgres over TLS](/operating/deployment/#postgres-over-tls).
 
-**ASD code intelligence.** The ASD code-pool flags `--asd-repo` and
+**ASD code intelligence.** The ASD code-pool flags `--asd-path` and
 `--asd-url` are **not** on `ctx serve` — they're passthrough flags on the
-`ctxone-hub` binary directly:
+`ctxone-hub` binary directly. (In practice you rarely need them: with no ASD
+flags the hub auto-discovers repos from `~/.config/asd/repos.toml`.)
 
 ```bash
 # Hub manages asd-serve processes — recommended for most setups
 ctxone-hub --http \
-  --asd-repo myproject=/home/alice/myproject/.asd-state.db \
-  --asd-repo otherlib=/home/alice/otherlib/.asd-state.db
+  --asd-path myproject=/home/user/myproject/.asd-state.db \
+  --asd-path otherlib=/home/user/otherlib/.asd-state.db
 
 # Pre-running asd-serve (useful when you want full control over the process)
 asd-serve --db /home/alice/myproject/.asd-state.db &
 ctxone-hub --http --asd-url myproject=http://127.0.0.1:4120
 ```
 
-- `--asd-repo <NAME=PATH>` — register an ASD repo for the code-intelligence
+- `--asd-path <NAME=PATH>` — register an ASD repo db for the code-intelligence
   process pool (repeatable). The hub spawns `asd-serve` on demand and kills
-  it after 5 min idle.
+  it after 5 min idle. (`--asd-repo` is accepted as a legacy alias.)
 - `--asd-url <NAME=URL>` — register a pre-running `asd-serve` endpoint
   (repeatable). Proxies `/api/code/<name>/*` to `<URL>/api/v1/*`.
 
 See [ASD_INTEGRATION.md](/integrations/asd-integration/) for the full setup guide.
+
+**Auth & origin (network-exposed hubs).** `ctxone-hub` accepts a bearer token
+and an origin allow-list, guarding both REST and `/mcp`; loopback is exempt:
+
+```bash
+ctxone-hub --http --auth-token "$CTXONE_AUTH_TOKEN" \
+  --allowed-origin https://lens.example.com
+```
+
+`--auth-token` (env `CTXONE_AUTH_TOKEN`) requires `Authorization: Bearer <tok>`
+on non-loopback requests; `--allowed-origin` (env `CTXONE_ALLOWED_ORIGINS`,
+comma-separated) allow-lists cross-origin browsers. See
+[Deployment](/operating/deployment/) and [HTTP API](/reference/http-api/#authentication).
+
+### `ctx service [install | uninstall | status]`
+
+Install the unified daemon (`ctxone-hub --http --lens`) as an **always-on
+login/boot service** so the hub is up before any agent starts — the recommended
+production setup. Uses the platform's native service manager: **launchd**
+(macOS), **systemd** (Linux), or **Task Scheduler** (Windows).
+
+```
+USAGE: ctx service <install | uninstall | status> [OPTIONS]
+
+  install     Register + start the daemon at login/boot
+  uninstall   Stop + remove the service
+  status      Show whether the service is installed and running
+
+OPTIONS (install):
+      --path <PATH>          Database path  [default: ~/.ctxone/memory.db]
+  -p, --port <PORT>          Port  [default: 3001]
+      --auth-token <TOK>     Bearer token baked into the service (env: CTXONE_AUTH_TOKEN)
+      --no-lens              Don't serve the Lens web UI
+```
+
+After `ctx service install`, run `ctx init` to point your AI tools at the
+running daemon by URL. See [Deployment](/operating/deployment/).
 
 ### `ctx init [options]`
 
@@ -502,6 +655,9 @@ Auto-detect installed AI tools and write CTXone into their MCP configs.
 USAGE: ctx init [OPTIONS]
 
 OPTIONS:
+      --transport <MODE>     http | stdio  [default: http] — http points tools
+                             at a running daemon by URL (one shared process);
+                             stdio makes each tool spawn its own hub child
       --global               User-level config instead of project-only
       --project              Project-only (default)
       --tool <NAME>          Target a specific tool: claude, cursor, vscode,
@@ -510,6 +666,10 @@ OPTIONS:
                              clients ctx init doesn't know about yet
       --dry-run              Show what would be written without writing
 ```
+
+With `--transport http` (the default), `ctx init` writes URL configs and, when
+a `--auth-token` is set on the hub, injects the bearer token into each config.
+`--transport stdio` writes the per-client spawn shape instead.
 
 **Supported tools** (auto-detection + auto-configuration):
 Claude Code, Claude Desktop, Cursor, VS Code (Copilot MCP), Codex,
@@ -555,8 +715,15 @@ fastest path to wiring CTXone into whatever agent you're already in.
 
 Manage the `AGENTS.md` guidance file — a short, pinned document that
 teaches AI tools how to use CTXone. `ctx agents show` prints the full
-text; `ctx agents install` writes it and primes it as pinned memory
-(prompts unless `--yes`). See also [AGENTS.md](AGENTS.md).
+text; `ctx agents install` writes it and primes it as pinned memory in your
+personal namespace, so every workspace's recall includes it. See also
+[Agent guidance](/reference/agent-guidance/).
+
+Earlier versions primed it into each workspace instead. `ctx agents install`
+removes the current workspace's copy, and `ctx agents migrate` lists every
+workspace that still has one; `--apply` primes the personal copy if it's
+missing, then removes them. `ctx agents status` reports both, and
+`ctx agents remove` removes both.
 
 ### `ctx db backup [--suffix <NAME>]`
 
@@ -663,14 +830,16 @@ teardown.
       "path": "/memory/pinned/vision/the-insight",
       "title": "The Insight",
       "body": "...",
-      "pinned": true
+      "pinned": true,
+      "namespace": "myrepo"
     },
     {
       "path": "/memory/licensing/18a6...",
       "value": "CTXone uses BSL-1.1",
       "pinned": false,
       "score": 2,
-      "full_match": true
+      "full_match": true,
+      "namespace": "_personal"
     }
   ],
   "pinned_count": 5,
@@ -799,6 +968,31 @@ Completing the last open task auto-promotes the plan to `completed`.
 
 Record the task as abandoned. `--reason` is required.
 
+### `ctx plan edit <plan> <task-id> [options]`
+
+Change a task after it was added. Only the options given change; status,
+proof and timestamps never do.
+
+Options:
+
+- `--title <text>` — new title; the task's description is kept
+- `-d, --description <text>` — new description (`""` removes it); the
+  title is kept
+- `--priority <p>` — `low`, `medium`, `high` or `critical`
+- `-b, --blocks <task-id>` — the task's new blockers, replacing the old
+  list; repeat for several. Each must be a task in the same plan, and the
+  list can't form a cycle
+- `--clear-blockers` — remove every blocker
+- `--force` — edit a task that is already done or abandoned
+
+An abandoned blocker never counts as done, so after abandoning a task, edit
+its dependents' blockers:
+
+```bash
+ctx plan abandon website-v2 t-004 --reason "superseded by t-009"
+ctx plan edit website-v2 t-007 -b t-009
+```
+
 ### `ctx plan next <plan>`
 
 Show the next pickable task.
@@ -811,6 +1005,8 @@ Options:
 - `--include-unassigned` — include unowned tasks alongside assigned
   ones (default on)
 - `--assigned-only` — restrict strictly to explicitly assigned tasks
+- `--in-order` — for sequential plans, pick the first unstarted task in
+  order rather than any pickable one
 
 With `--me`, two agents sharing one plan each pick up their own tasks
 without stepping on each other. This is **state-driven orchestration**
@@ -843,6 +1039,43 @@ incremental progress, prefer `ctx plan done` per task.
 ### `ctx plan archive <plan>`
 
 Soft-archive. Task data preserved.
+
+### `ctx plan link <plan> <task-id> <plan/task>`
+
+Record that this task, when done, **satisfies a task in another plan** (a
+cross-plan pointer). Advisory: `plan done` on the linked task then reminds you
+to close the target. Also on `plan next --in-order` (pick the first unstarted
+task by order instead of highest priority).
+
+### `ctx plan stale [--days N]`
+
+List **in-progress tasks idle for N days** (default 7), most-stale first — the
+drift `plan start`'s warning guards against. Add `--all-namespaces` for a global
+view.
+
+---
+
+## `ctx docs` — canonical-doc registry
+
+Index your canonical `.md` docs so agents find the right one without scanning
+the repo (the repo file stays canonical; this stores the pointer).
+
+- `ctx docs add <path> [--status --scope --owner --answers --supersedes]` —
+  register/update a doc (idempotent per path).
+- `ctx docs list` — list registered docs.
+- `ctx docs find <query>` — find docs by path/scope/answers/owner.
+
+To import a doc's *content* into recall instead, use `ctx import-doc <file>`
+(alias of `ctx prime`; `--pin` to always-include).
+
+## `ctx db export` / `ctx db import`
+
+Portable JSON snapshots (vs the binary `db backup`). `ctx db export [--out FILE]`
+dumps the current branch's graph; `ctx db import FILE` merges it back (upsert).
+Prune the JSON between the two to seed a fresh db with only what you want.
+`--branch` picks the branch and `--namespace` the workspace. `ctx db` doesn't
+detect the workspace from the current directory, so without `--namespace` it's
+`default`.
 
 ---
 

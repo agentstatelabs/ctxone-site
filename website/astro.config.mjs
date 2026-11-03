@@ -103,6 +103,7 @@ export default defineConfig({
 					label: 'Operating',
 					items: [
 						{ label: 'Deployment & config', slug: 'operating/deployment' },
+						{ label: 'Connect to a Hub', slug: 'operating/connect-a-hub' },
 						{ label: 'Cookbook', slug: 'operating/cookbook' },
 						{ label: 'Troubleshooting', slug: 'operating/troubleshooting' },
 						{ label: 'Data safety', slug: 'operating/data-safety' },

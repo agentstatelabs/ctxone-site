@@ -2,7 +2,7 @@
 title: "Troubleshooting"
 description: "Top errors you'll hit and how to fix them. Run `ctx doctor` first — it catches most of these automatically and suggests fixes."
 sidebar:
-  order: 2
+  order: 3
 ---
 Top errors you'll hit and how to fix them. Run `ctx doctor` first — it
 catches most of these automatically and suggests fixes.
@@ -18,9 +18,16 @@ bound to a different interface.
 **Fix:**
 
 ```bash
-ctx serve --http           # start it
-# ... or in another terminal / systemd service / docker
+ctx serve --http --lens    # start it in this terminal (add --lens for the web UI)
 ctx status                 # verify
+```
+
+For an **always-on** hub that comes up before any agent (recommended), install
+it as a login/boot service instead of starting it by hand:
+
+```bash
+ctx service install        # launchd / systemd / Task Scheduler
+ctx service status         # verify it's registered and running
 ```
 
 If you have the Hub running on a different port or host:
@@ -31,6 +38,13 @@ ctx status
 ```
 
 Or pass `--server` explicitly.
+
+**401 Unauthorized (network-exposed hub).** If the hub was started with a
+bearer token (`--auth-token` / `CTXONE_AUTH_TOKEN`), non-loopback clients must
+send it. Loopback (`127.0.0.1`) is exempt, so local `ctx` works without one; a
+remote client needs `CTXONE_AUTH_TOKEN` set in its own environment. A browser
+hitting Lens cross-origin also needs its origin allow-listed on the hub
+(`--allowed-origin` / `CTXONE_ALLOWED_ORIGINS`).
 
 ## 2. `ctx: command not found`
 
@@ -119,11 +133,18 @@ default (`.mcp.json` in cwd). If you want global, add `--global`.
 ctx init --dry-run
 ```
 
-Copy the path. Open it in an editor. Verify the `mcpServers.ctxone` entry
-points at your actual `ctxone-hub` binary.
+Copy the path. Open it in an editor. Verify the `mcpServers.ctxone` entry.
+Under the default `--transport http` it should be a `url` pointing at your
+running daemon (`http://localhost:3001/mcp?namespace=…`) — so confirm the hub
+is actually up (`ctx status`). Under `--transport stdio` it should be a
+`command` pointing at your actual `ctxone-hub` binary.
 
-**Cause D — the Hub binary moved.** If you reinstalled, the old `.mcp.json`
-may point at a stale path. Re-run `ctx init` to refresh.
+**Cause D — the Hub binary moved.** If you reinstalled, an old stdio `.mcp.json`
+may point at a stale binary path. Re-run `ctx init` to refresh.
+
+**Cause E — http config but no daemon.** With `--transport http`, nothing
+spawns a hub for you — the tool connects to a hub you must already be running.
+Start one (`ctx serve --http` or `ctx service install`) before launching the tool.
 
 ## 5. Ratio stuck near 1.0x — no savings
 
@@ -224,7 +245,58 @@ export DATABASE_URL=postgres://ctxone:secret@localhost:5432/ctxone
 ctx serve --http --storage postgres
 ```
 
-The Hub will create its tables on first run.
+The Hub will create its tables on first run: the graph's, and
+`ctxone_projects`, `ctxone_project_paths` and `ctxone_sessions` for the
+project registry and session stats.
+
+**TLS errors** (see [Postgres over TLS](/operating/deployment/#postgres-over-tls)):
+
+- `no pg_hba.conf entry for host …, no encryption`: the server accepts only
+  TLS. Add `sslmode=verify-full` to `DATABASE_URL`.
+- `invalid peer certificate: UnknownIssuer`: the server's certificate isn't
+  from a public CA. Add `&sslrootcert=<the provider's CA bundle>`, or set
+  `PGSSLROOTCERT`.
+- `certificate not valid for name "…"`: `DATABASE_URL` names the server
+  differently from its certificate, for example by IP address. Use the host
+  name the certificate is for.
+- `sslrootcert <path>: … No such file or directory`: the CA file isn't where the
+  connection string says.
+
+## 11. `ctx: can't tell which workspace <dir> belongs to`
+
+Every Hub-bound `ctx` command first asks the Hub which workspace the current
+directory belongs to. When the Hub can't answer, the command stops rather than
+fall back to `default` — reading and writing `default` instead of your project
+is how plans and branches turn up "not found". The text after the colon says
+why. Exit codes: `75` timed out, `76` the Hub reported an error, `69` Hub
+unreachable.
+
+**Cause A — macOS is showing a privacy prompt** (`reading <dir> (its
+.ctxproject and git remote) took over 3s`, or `project detection did not
+finish within 3s`). `ctx` reads the directory's `.ctxproject` and git remote
+itself, and the first time an app macOS hasn't seen reads a repo under
+`~/Documents`, `~/Desktop` or `~/Downloads`, the read blocks until the prompt
+is answered. The prompt names the app running `ctx`: your terminal, or
+`ctxone-hub` when its background session sync runs `ctx`. A Hub older than
+your `ctx` (or an older `ctx`) has the Hub read the directory instead, so the
+prompt is for `ctxone-hub`; that is common right after `brew upgrade`, since
+macOS treats the upgraded binary as a new app. Find the "… would like to
+access files in your Documents folder" dialog (it may be behind other
+windows) and click **Allow**.
+
+**Cause B — the prompt was denied** (`cannot read …/.ctxproject: Operation not
+permitted`). Grant that app access in **System Settings → Privacy & Security →
+Files and Folders** (or add it under **Full Disk Access**), then retry.
+
+**Cause C — the Hub isn't running** (`hub unreachable`). See
+[section 1](#1-hub-unreachable-httplocalhost3001).
+
+**Check:** `ctx status` and `ctx doctor` report the failure instead of stopping
+on it. **Workaround** while you fix the cause:
+
+```bash
+ctx --namespace <workspace> plan list   # or: export CTX_NAMESPACE=<workspace>
+```
 
 ---
 
@@ -288,8 +360,9 @@ Outputs the integer version. The write is recorded under the
 
 ## Enabling verbose logs
 
-The Hub uses the `tracing` crate. Set `RUST_LOG` before starting it to
-control verbosity:
+The Hub records with the `tracing` crate and logs through
+[oxtel](https://github.com/agentstatelabs/oxtel). Set `RUST_LOG` before
+starting it to control verbosity:
 
 ```bash
 # Default — info-level startup and recall telemetry
@@ -304,12 +377,35 @@ RUST_LOG=trace ctx serve --http
 # Scoped — only enable debug for CTXone's own code
 RUST_LOG=ctxone_hub=debug ctx serve --http
 
-# Combined — debug CTXone, info HTTP request traces from tower-http
-RUST_LOG=ctxone_hub=debug,tower_http=info ctx serve --http
+# Quieter — keep CTXone's info lines, drop the per-request lines
+RUST_LOG=info,oxtel_tower=warn ctx serve --http
 ```
 
 All logs go to **stderr**, so they never corrupt the stdio MCP channel
-when the Hub runs as an MCP server.
+when the Hub runs as an MCP server. On a terminal they're text; anywhere
+else, such as a log file or a container, they're one JSON object per line.
+`OXTEL_LOG_FORMAT` chooses: `text`, `json`, `ecs` (Elastic Common Schema)
+or `none`.
+
+When the Hub starts, it logs one line from the target `oxtel` saying where
+log lines go and whether anything is exported. In HTTP mode, each request
+logs a `request` line with its method, route, status, duration and trace
+id.
+
+### Sending traces, metrics and logs to a collector
+
+The Hub sends nothing anywhere by default. A Hub built with the `otlp`
+feature (`cargo build -p ctxone-hub --features otlp`) sends traces, metrics
+and logs over OTLP once `OTEL_EXPORTER_OTLP_ENDPOINT` is set:
+
+```bash
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 ctxone-hub --http
+```
+
+HTTP requests and MCP tool calls, over HTTP and stdio, get spans named by
+the OpenTelemetry conventions (`GET /api/health`, `tools/call recall`), and
+continue the caller's trace when it sends one. Tool arguments and results
+are never recorded. If sending fails, a warning says where and why.
 
 In HTTP mode, every `recall` call emits an `info`-level line with the
 topic, tokens sent, and savings ratio — useful for watching memory earn
@@ -361,7 +457,8 @@ Usually it's one of three things:
    client and throttles hard. Configure the proxy to forward the real
    client IP via `X-Forwarded-For` (a future release will add support
    for trusted forwarded headers — today you can disable rate limiting
-   and let the proxy handle it).
+   and let the proxy handle it). A multi-tenant Hub limits each tenant
+   rather than each address, so a proxy doesn't affect it.
 2. **Running a parallel batch job** from a single IP. Bump the limit
    with `--rate-limit-rpm 3000` or disable it with `--rate-limit-rpm 0`
    during the batch.
@@ -441,10 +538,13 @@ Open WebUI's.
 
 Highest priority wins:
 
-1. **HTTP request**: `X-CTXone-Agent: <name>` header on the request
+1. **HTTP request**: `X-CTXone-Agent: <name>` header on the request. MCP
+   over HTTP also takes `?agent=<name>` in the URL, ahead of the header.
+   `ctx init` writes one or the other into each tool's entry.
 2. **MCP stdio**: `--agent-id <name>` flag passed when spawning
    `ctxone-hub` as a subprocess (or `CTX_AGENT_ID` env var)
-3. **Fallback**: `"ctxone"`
+3. **Fallback**: `"ctxone"`, or for MCP over HTTP the Hub's own
+   `--agent-id`
 
 ### Setting the agent ID from clients
 

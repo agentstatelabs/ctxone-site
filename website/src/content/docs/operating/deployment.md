@@ -6,9 +6,11 @@ sidebar:
 ---
 How to run the CTXone Hub, and the configuration choices that matter — the
 **shared daemon** (the standard setup), running it **as a service**, giving an
-agent its **own memory**, and **securing** the hub with a token when you expose
-it beyond localhost. If you followed the Quickstart and everything works, you
-already have the standard setup; this page is the reference for the rest.
+agent its **own memory**, **securing** the hub with a token when you expose
+it beyond localhost, and **one hub for many users**
+([below](#one-hub-for-many-users)). If you followed the Quickstart and
+everything works, you already have the standard setup; this page is the
+reference for the rest.
 
 ## The one rule that governs every setup
 
@@ -92,6 +94,9 @@ The `?namespace=` is filled in from the project detected in the current director
 
 - ✅ One process, one lock, **startup order irrelevant** — the reboot race is gone.
   Lens always up, independent of any agent; multiple agents share one graph.
+- ✅ MCP sessions carry on across a hub restart and after five idle minutes: the
+  hub keeps how each began in its db, so a client needn't start a new one. A
+  session unused for 7 days is forgotten.
 - MCP clients reach the daemon two ways, and `ctx init --transport http` writes
   the right one per client:
   - **Native URL** — Claude Code, Cursor, VS Code get `{"type":"http","url":…}`.
@@ -134,7 +139,8 @@ Use this when:
 - You're experimenting and don't want to touch your main graph.
 
 > Isolated dbs do **not** sync. A fact remembered in `claude.db` is invisible to
-> the hub serving `memory.db`. To browse an isolated db in Lens, run a hub on it
+> the hub serving `memory.db`. No two hubs sync yet: to share memory between
+> machines, connect them to one hub ([Connect to a Hub](/operating/connect-a-hub/)). To browse an isolated db in Lens, run a hub on it
 > at a **different port** while the agent is stopped, or on a copy:
 > `ctxone-hub --http --lens --path /Users/you/.ctxone/claude.db --port 3002`.
 
@@ -178,6 +184,9 @@ Override per agent with `--path` (topology C). A bare `ctxone-hub` with no
 | `--allowed-origin <ORIGIN>` | Extra browser origin allowed to call the API (repeatable; same-origin is always allowed) |
 | `--init` | Create the db file if missing (guards against path typos) |
 | `--storage memory` | Ephemeral, no file, no lock — good for tests/demos |
+| `--storage postgres --database-url <URL>` | Postgres instead of SQLite (or set `DATABASE_URL`) |
+| `--pg-pool-size <N>` | Most Postgres connections the hub holds (default 32); a multi-tenant hub's tenants share them |
+| `--tenants-file <PATH>` | One hub for many users: each request's token picks its tenant ([below](#one-hub-for-many-users)) |
 | `--asd-path name=PATH` | Register an ASD code-graph repo for the process pool |
 
 ### Environment
@@ -188,8 +197,15 @@ Override per agent with `--path` (topology C). A bare `ctxone-hub` with no
 | `CTX_NAMESPACE` | Project namespace for CLI/MCP scoping |
 | `CTX_BRANCH` | Default memory branch/ref |
 | `CTX_TOKEN` | Bearer token the `ctx` CLI sends (for a remote authed hub) |
+| `CTX_REMOTE_TURNS` | `1` lets `ctx` send raw session turns to a hub that isn't on this machine (overrides the `remote_turns` config key; see below) |
 | `CTXONE_AUTH_TOKEN` | Same as `--auth-token` (bearer guarding REST + `/mcp`) |
+| `CTXONE_AUTH_TOKEN_FILE` | Same as `--auth-token-file` (tokens one per line, re-read every second) |
+| `CTXONE_REQUIRE_AUTH_ON_LOOPBACK` | `1` = same as `--require-auth-on-loopback` (loopback peers need the token too) |
 | `CTXONE_ALLOWED_ORIGINS` | Comma/space-separated extra allowed browser origins |
+| `CTXONE_STRICT_ORIGIN` | `1` = same as `--strict-origin` (only the allowed origins, never same-origin by `Host`) |
+| `DATABASE_URL` | Postgres connection URL; setting it selects Postgres storage, unless `--storage memory` |
+| `CTXONE_PG_POOL_SIZE` | Same as `--pg-pool-size` |
+| `CTXONE_TENANTS_FILE` | Same as `--tenants-file`, for the hub and for `ctxone-hub tenant` |
 | `CTXONE_BACKUP_KEEP` | Startup snapshots to retain (default 5) |
 | `CTXONE_BACKUP_INTERVAL_SECS` | Background VACUUM-INTO snapshot interval (default 1800; 0 disables) |
 | `RUST_LOG` | Log level (`info` default) |
@@ -206,9 +222,11 @@ ctxone-hub --http --lens --path ~/.ctxone/memory.db --auth-token "$(openssl rand
 ```
 
 Behaviour:
-- **Loopback peers (127.0.0.1/::1) are always exempt** — local CLI, Lens, and
-  same-host agents keep working with no token.
-- **Non-loopback requests must send** `Authorization: Bearer <token>` (else 401).
+- **Loopback peers (127.0.0.1/::1) are exempt** — local CLI, Lens, and
+  same-host agents keep working with no token — unless
+  `--require-auth-on-loopback` is set (see *Hosted hub* below).
+- **Non-loopback requests must send** `Authorization: Bearer <token>` (else 401),
+  except `GET /api/health`, so health checks need no token.
 - Setting a token also relaxes `/mcp`'s loopback-only Host check so authenticated
   remote clients can connect (the bearer becomes the gate).
 
@@ -225,6 +243,80 @@ How each client gets the token:
   mcp-remote bridge can't expand env vars, so Claude Desktop needs the literal
   `--auth-token` form.
 
+Raw session turns stay on the machine that recorded them. When `ctx`'s hub isn't
+on this machine (anything but `localhost`, a `.localhost` name, 127.x or `::1`),
+`ctx ingest-session` and `ctx session import` send each session's title,
+metadata, provenance, per-model token usage and extracted memories, and the
+Stop-hook `ctx capture-turn` sends token counts and extracted memories, but none
+of them sends the turns. The per-model usage is worked out from the turns on
+this machine and sent as totals (`PUT /api/sessions/{sid}/usage`). To send turns
+as well, run `ctx config set remote_turns true`, or set `CTX_REMOTE_TURNS=1` for
+one command.
+
+### Rotating tokens
+
+Keep tokens in a file instead of on the command line, one per line:
+
+```bash
+ctxone-hub --http --auth-token-file /etc/ctxone/tokens
+```
+
+The hub re-reads the file every second and accepts every token in it, so a
+rotation needs no restart: add the new token as a line, switch clients to it,
+then delete the old line. An empty file accepts no token. A Kubernetes secret
+mounted as a volume works as is, since its updates swap the file atomically; one
+mounted with `subPath` never updates.
+
+### Hosted hub
+
+A hub reached over the internet, behind an ingress, should also stop trusting
+loopback and `Host`:
+
+```bash
+ctxone-hub --http --storage postgres \
+  --auth-token-file /run/secrets/ctxone-tokens \
+  --require-auth-on-loopback \
+  --strict-origin --allowed-origin https://alice.ctxone.example
+```
+
+- `--require-auth-on-loopback`: an ingress or sidecar on 127.0.0.1 makes every
+  request arrive from loopback, which would otherwise skip the token. The hub
+  refuses this flag without a token, and hands its own `ctx` subprocesses the
+  token as `CTX_TOKEN`.
+- `--strict-origin`: browsers may call the API only from the listed origins.
+  Without it, an `Origin` matching the request's `Host` counts as same-origin,
+  and behind an ingress, or under DNS rebinding, `Host` is whatever the caller
+  sent.
+
+A hub set up this way serves one tenant (`--tenant`): everyone with a token
+shares one graph. For several users, each with their own memory, run one hub
+with a tenants file instead: [One hub for many users](#one-hub-for-many-users).
+
+### Postgres over TLS
+
+The hub reaches Postgres over verified TLS, set in `DATABASE_URL` the way libpq
+does it:
+
+```bash
+export DATABASE_URL='postgres://ctxone:secret@db.example.com:5432/ctxone?sslmode=verify-full'
+```
+
+- `sslmode=verify-full` (or `require`, or `verify-ca`): TLS, with the server's
+  certificate checked against Mozilla's roots and its host name. There is no
+  unverified TLS.
+- A provider that signs with its own CA (Amazon RDS, Google Cloud SQL, …):
+  download its CA bundle and add `&sslrootcert=/path/to/ca.pem`, or set
+  `PGSSLROOTCERT=/path/to/ca.pem`.
+- No `sslmode`, or `sslmode=disable`, is plaintext: fine for a database on the
+  same machine, and on a private network if you mean it, in which case say
+  `sslmode=disable`. For a database on another machine with no `sslmode`, or
+  with `prefer`, the hub logs a warning at startup.
+
+The startup line says which mode the hub connected with
+(`Storage: postgres … tls=verify-full`); it never logs the URL, which may
+carry a password. `scripts/test-postgres-tls.sh` runs the hub's TLS tests
+against a throwaway Postgres that accepts only TLS.
+
 ### Cross-origin (CSRF / DNS-rebinding)
 
 Independent of the token, the hub rejects **browser** requests whose `Origin`
@@ -240,21 +332,310 @@ ctxone-hub --http --allowed-origin https://lens.example.com   # repeatable
 # or CTXONE_ALLOWED_ORIGINS="https://a.example, https://b.example"
 ```
 
-### Lens over an authenticated hub — use a tunnel
+### Lens over an authenticated hub
 
-Lens is a browser SPA; it can't attach an `Authorization: Bearer` header to its
-requests. So when a token is set, a **remote** browser hitting Lens directly is
-rejected by the auth layer (loopback is exempt, remote is not). Treat Lens as a
-**local admin UI** and reach it remotely over an SSH tunnel, which makes your
-browser a loopback client of the hub:
+When a token is set, a **remote** browser's first call gets a 401 (loopback is
+exempt, remote is not), and Lens asks for the token. Paste the hub's token: Lens
+checks it, keeps it in the browser's storage for the hub's origin, and sends it
+as `Authorization: Bearer` on every call. A refused token (a rotated one, say)
+brings the question back, and *Forget token* in the sidebar removes it. Reach a
+remote hub over HTTPS, so the token isn't sent in the clear. With
+`--strict-origin`, list the hub's own origin with `--allowed-origin`.
+
+To keep the hub off the network instead, reach it over an SSH tunnel, which
+makes your browser a loopback client that needs no token:
 
 ```bash
 ssh -L 3001:localhost:3001 you@hub-host      # then open http://localhost:3001
 ```
 
-The hub prints this reminder at startup when `--lens` and `--auth-token` are both
-set. (REST and `/mcp` remain directly reachable with the bearer token; only the
-browser UI needs the tunnel.)
+## One hub for many users
+
+One hub can serve many people ("tenants") from one process and one Postgres
+database. Each tenant has its own memory, plans, workspaces, project registry,
+session statistics and MCP sessions, and two tenants can use the same workspace
+names without meeting. Each request's token picks its tenant, and adding a
+tenant is one command, with no restart.
+
+```
+  alice's agents, ctx, Lens ── token A ─┐
+                                        ├─ HTTPS ─▶ proxy ─▶ ctxone-hub --tenants-file ─▶ Postgres
+  bob's agents, ctx, Lens   ── token B ─┘
+```
+
+How it's built and how tenants are kept apart:
+[the multi-tenant Hub design](https://github.com/agentstatelabs/ctxone/blob/main/docs/design/MULTI_TENANT_HUB.md). The API's side of it:
+[HTTP API](/reference/http-api/#multi-tenant-mode).
+
+### What it takes
+
+- **Postgres.** One database holds every tenant. The hub creates its tables, and
+  a tenant's rows on that tenant's first request. Reach the database over TLS
+  ([Postgres over TLS](#postgres-over-tls)). To try multi-tenant mode out
+  without one, `--storage memory` keeps the tenants in memory until the hub
+  stops.
+- **One hostname with HTTPS** in front of the hub, from a reverse proxy or an
+  ingress ([below](#https-in-front)). The hub itself speaks plain HTTP.
+- **One hub process, or several:** replicas can share the database behind one
+  load balancer ([More than one replica](#more-than-one-replica)).
+
+### Add tenants
+
+```bash
+ctxone-hub tenant add alice --tenants-file /var/lib/ctxone/tenants
+```
+
+This prints alice's token on stdout, once: `ctx_` and 64 hex digits. Give it to
+alice. The tenants file keeps only its SHA-256, a line `alice <hash>` per token.
+Set `CTXONE_TENANTS_FILE` instead of passing `--tenants-file` every time.
+
+| Command | Effect |
+|---|---|
+| `add <name>` | Create a tenant and print its token, once |
+| `list` | The tenants and how many tokens each has |
+| `rotate <name>` | Replace the tenant's tokens with a new one, printed once. The old ones are refused within a second |
+| `disable <name>` | Refuse the tenant's tokens. Its data stays, and the hub closes the tenant within a minute |
+| `enable <name>` | Accept a disabled tenant's tokens again |
+| `purge <name>` | Delete a disabled tenant's data from the database (`--database-url`, or `DATABASE_URL`), then its lines in the file. Asks for the tenant's name unless given `--yes`, and waits about a minute first, so every hub has closed the tenant. Can't be undone |
+
+- **The hub re-reads the file every second,** so none of these needs a restart.
+  A bad line stops the hub at startup; later it's skipped with a warning, so a
+  typo locks out only that line.
+- **Run `ctxone-hub tenant` as the user the hub runs as.** The first `add`
+  creates the file readable by its owner only (`0600`). Edits take
+  `<file>.lock` and replace the file with a rename, so its directory must be
+  writable, which a read-only mount (a Kubernetes secret, say) isn't.
+- **Several tokens for one tenant** (one per device, say): `add` and `rotate`
+  give a tenant one, and more are lines you add yourself,
+  `alice <sha256 of the token>` with the hash in lowercase hex. `rotate`
+  replaces them all.
+- Tenant names are 1 to 63 of `a-z`, `0-9` and `-`.
+
+### Run the hub
+
+```bash
+export DATABASE_URL='postgres://ctxone:…@db.internal:5432/ctxone?sslmode=verify-full'
+ctxone-hub --http --lens --port 3001 \
+  --tenants-file /var/lib/ctxone/tenants \
+  --strict-origin --allowed-origin https://hub.example.com
+```
+
+With `DATABASE_URL` set, the hub uses Postgres; `--storage postgres
+--database-url <URL>` says the same. At startup it logs that it's in
+multi-tenant mode, with the number of tenants and tokens, what's off, and
+`Storage: postgres, every tenant on one pool` with the TLS mode and pool size.
+Request log lines carry the tenant as `ctxone.tenant`, never a token.
+
+It refuses to start (exit 64), rather than ignore them, with settings that can't
+apply: `--auth-token` or `--auth-token-file` (the tenants file replaces them),
+`--tenant`, SQLite, no `--http`, the ASD flags, `--ctx-binary`, and `--lens`
+with `--strict-origin` but no `--allowed-origin`. A tenants file it can't read,
+or one with a bad line, stops it with exit 66.
+
+As a systemd service, with `DATABASE_URL=…` in `/etc/ctxone/hub.env` and a
+`ctxone` user that owns `/var/lib/ctxone`:
+
+```ini
+[Unit]
+Description=CTXone Hub (multi-tenant)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=ctxone
+EnvironmentFile=/etc/ctxone/hub.env
+ExecStart=/usr/local/bin/ctxone-hub --http --lens --port 3001 --tenants-file /var/lib/ctxone/tenants --strict-origin --allowed-origin https://hub.example.com
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Stopping the hub (SIGTERM) saves every open tenant's session statistics first.
+
+### Size the connection pool
+
+Every tenant shares one pool of `--pg-pool-size` connections (default 32, or
+`CTXONE_PG_POOL_SIZE`). A request holds a connection only while it reads or
+writes, and a closed tenant holds none, so the pool tracks how many requests
+run at once, not how many tenants there are. Connections open as they're
+needed, up to the limit.
+
+The hub holds at most `--pg-pool-size` connections, plus one while a tenant
+opens: tenants open one at a time, each under a lock on a connection of its
+own. Keep that, plus a couple for `ctxone-hub tenant purge` and whatever else
+uses the database, under the server's `max_connections` (100 by default on
+Postgres; managed plans often allow fewer). Lower the pool for a small plan.
+
+### More than one replica
+
+Several hubs can serve the same tenants from one database, so one can restart
+or fail while the others answer. Start each the same way, with the same flags,
+the same `DATABASE_URL` and the same tenants file. The load balancer in front
+needs no affinity: any replica can answer any request.
+
+- **MCP sessions continue on any replica.** A hub on Postgres keeps how each MCP
+  session began (the client's `initialize`) in the database. When a request
+  names a session the replica doesn't hold, because it began on another one or
+  this one let it go (after five idle minutes, when the tenant closed, or in a
+  restart), the replica takes it up and the client carries on. A session
+  continues only for its tenant, in the workspace and session it began in. One
+  unused for 7 days is forgotten, and its client is told to start a new one (a
+  404, which MCP clients answer by starting over).
+- **Session statistics add up.** Each replica saves what it counted since its
+  last save (every 30 seconds, when a tenant closes and when it stops) on top
+  of what the others saved, then takes in theirs, so the replicas agree within
+  a save or two. A session deleted through one replica is gone from all of
+  them.
+- **Rate limits are per replica.** A tenant can make `--rate-limit-rpm`
+  requests a minute to each replica, that many times the number of replicas in
+  all. Lower it to match, or limit at the load balancer.
+- **Connections add up too.** Each replica holds up to `--pg-pool-size`, plus
+  one while a tenant opens. Keep the sum under the server's `max_connections`.
+- **The tenants file:** run `ctxone-hub tenant` on the file the replicas read,
+  on a shared volume. Where each replica has a copy instead (a Kubernetes
+  Secret or ConfigMap, say), a change reaches a replica when its copy does,
+  which can take a minute or more. `purge` allows a minute for every hub to
+  stop serving the tenant, so `disable` first, and `purge` once every copy has
+  the change.
+- **Writes to a tenant's graph from two replicas at once** never lose a commit:
+  a branch moves only from the commit a write was built on. Recall results are
+  worked out again once the graph changes, whichever replica changed it, and
+  the workspace summary is at most 15 seconds old.
+- **Row-level security** is switched for the database:
+  `ctxone-hub db row-security on` runs once, from anywhere.
+
+A single-tenant hub keeps its MCP sessions in its database too, on Postgres or
+in its SQLite file, so they carry on across a restart.
+
+### Row-level security
+
+Every query the hub runs is filtered by its tenant. Row-level security has the
+database check that too: with it on, each table that holds tenants' rows
+(AgentStateGraph's, and the hub's `ctxone_*` tables) shows a statement only its
+own tenant's rows, and refuses to write another tenant's. A query missing its
+filter then sees nothing of anyone else's. It's off until you switch it on,
+once for each database:
+
+```bash
+ctxone-hub db row-security on --database-url "$DATABASE_URL"
+```
+
+It prints `on`. `ctxone-hub db row-security status` prints `on`, `off` or
+`partial` and names any table it's off for, and `off` switches it off. Hubs
+already running needn't restart: every connection a hub uses names its tenant
+already.
+
+- **Connect the hub as a role that row-level security binds:** not a superuser,
+  and without `BYPASSRLS`, either of which skips it without a word. A new role
+  has neither:
+
+  ```sql
+  CREATE ROLE ctxone LOGIN PASSWORD '…';
+  CREATE DATABASE ctxone OWNER ctxone;
+  ```
+
+  At startup a hub on Postgres logs whether row-level security is on, and warns
+  when it's on but the hub's role skips it, when it's on for only some tables,
+  or when a table with a `tenant_id` column has no policy.
+- **Run `ctxone-hub db` as the role that owns the tables,** which is the hub's
+  role if the hub created them. Row-level security is forced, so it binds the
+  owner too. Switching locks each table for a moment, and gives up if a busy one
+  keeps it waiting 10 seconds; run it again.
+- **Back up as a role that skips it.** With it on, `pg_dump` as the tables'
+  owner fails rather than dump only some rows. Dump as a superuser, or as a role
+  made for backups (Postgres 14 or later):
+
+  ```sql
+  CREATE ROLE ctxone_backup LOGIN BYPASSRLS PASSWORD '…';
+  GRANT pg_read_all_data TO ctxone_backup;
+  ```
+
+  Your provider's snapshots aren't affected.
+- **`ctxone-hub tenant purge`** works with it on: it deletes as the tenant it
+  purges.
+
+### HTTPS in front
+
+The hub listens on `0.0.0.0:<port>` over plain HTTP. Terminate TLS for your
+hostname at a reverse proxy or ingress, and keep the hub's port off the
+internet. Then:
+
+- **Tokens never cross the network in the clear,** and Lens keeps its token
+  for the `https://` origin.
+- **There's no loopback exemption** on a multi-tenant hub, so a proxy on
+  127.0.0.1 doesn't let requests past the token check, and
+  `--require-auth-on-loopback` isn't needed.
+- **`--strict-origin --allowed-origin https://<your hostname>`** lets browsers
+  call the API only from the hub's own pages. Behind a proxy, `Host` is
+  whatever the caller sent, so without `--strict-origin` a matching `Host`
+  would be enough.
+- **Rate limits are per tenant** (`--rate-limit-rpm`, 600 a minute by default),
+  so a proxy that hides client addresses changes nothing. With several
+  replicas, they're per replica too.
+- **MCP responses can be long-lived event streams.** Don't buffer `/mcp`, and
+  allow long requests (nginx: `proxy_buffering off;` and a long
+  `proxy_read_timeout`).
+- **`/api/health` needs no token,** so a load balancer, a Kubernetes probe or
+  the container image's built-in health check can call it as it is. It answers
+  only that the hub is up, opens no tenant, and isn't rate limited. A token
+  sent with it is still checked, so a wrong one is a 401.
+
+### Connect clients
+
+[Connect to a Hub](/operating/connect-a-hub/) walks through it, with what each machine
+sends and what it keeps. Each person uses their own token, against the one
+hostname:
+
+```bash
+export CTX_SERVER=https://hub.example.com
+export CTX_TOKEN=<your token>
+ctx init --mcp-url https://hub.example.com/mcp --auth-token-env CTX_TOKEN
+```
+
+- **The `ctx` CLI** reads `CTX_SERVER` and `CTX_TOKEN`.
+- **AI tools:** `ctx init` points each one at `/mcp` with the token, here read
+  from `CTX_TOKEN` when the tool runs. Claude Desktop's bridge can't read a
+  variable, so it needs `--auth-token <token>` instead, written into its
+  config ([Authentication](#authentication)).
+- **Lens:** open `https://hub.example.com` and paste the token once. Lens keeps
+  it in that browser, for that origin; *Forget token* in the sidebar removes
+  it.
+- **Project detection** needs nothing more: `ctx` sends what it finds in the
+  directory, and the hub never reads its own disk for it.
+- **Sessions:** `ctx ingest-session` and the Stop hook send a session's
+  metadata and extracted memories, but not its raw turns, to a hub that isn't
+  on the same machine, unless `remote_turns` is set (see
+  [Authentication](#authentication)).
+
+### What's off
+
+A multi-tenant hub's own machine isn't any tenant's, so what acts on it is off:
+
+- ASD code intelligence: the `/api/code` proxy and the MCP code tools;
+- discovering, importing, autosyncing and syncing session transcripts from the
+  hub machine's disk;
+- SQLite backups and the lockfile (back up Postgres instead);
+- project detection reading the hub machine's disk;
+- `help` running other tools' binaries.
+
+Their routes answer 404 ([HTTP API](/reference/http-api/#multi-tenant-mode)), and Lens
+leaves those views out. A single-tenant hub keeps all of them.
+
+### Running it
+
+- **Backups:** a Postgres backup (`pg_dump`, or your provider's snapshots)
+  holds every tenant. There's no export of one tenant yet. With row-level
+  security on, run `pg_dump` as a role that skips it
+  ([Row-level security](#row-level-security)).
+- **A lost or leaked token:** `ctxone-hub tenant rotate <name>`.
+- **Someone leaves:** `disable` them, and `purge` once their data can go.
+- **Upgrades:** stop the hub, which saves every open tenant's statistics, and
+  start the new one. Each tenant's schema is brought up to date on its first
+  request after that, and MCP clients carry on with their sessions.
+- **Idle tenants** close after 30 minutes without a request, and open again on
+  the next one, their MCP sessions with them. An open tenant's session
+  statistics are saved every 30 seconds.
 
 ## Running as a service
 
@@ -326,6 +707,10 @@ launchctl load -w ~/Library/LaunchAgents/com.ctxone.hub.plist
   is running with `--http`. `curl http://localhost:3001/api/health`.
 - **Agent and Lens show different memory** — they're on different db paths
   (topology C). That's isolation working as configured.
+- **Every request to a multi-tenant hub is a 401** — there's no loopback
+  exemption, so each request but `GET /api/health` needs a tenant's token.
+  `ctxone-hub tenant list` shows whether the tenant is disabled; `rotate` gives
+  it a new token.
 
 See also: [ARCHITECTURE.md](/how-it-works/architecture/) · [DATA_SAFETY.md](/operating/data-safety/) ·
 [TROUBLESHOOTING.md](/operating/troubleshooting/)
